@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "(Windows) Lancer",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "preLaunchTask": "CMake: build",
+            "program": "${workspaceFolder}/build/Debug/Blossom-Blosoft.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "integratedTerminal",
+        }
+    ],
+    "version": "2.0.0"
+}
