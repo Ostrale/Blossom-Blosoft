@@ -12,7 +12,7 @@ add_compile_definitions(TINS_STATIC)
 include(CTest)
 enable_testing()
 
-add_executable(Blossom-Blosoft main.cpp)
+add_executable(Blossom-Blosoft main.cpp toby.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
