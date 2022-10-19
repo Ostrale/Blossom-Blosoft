@@ -6,21 +6,22 @@ const { app, BrowserWindow } = require('electron')
 const path = require('path')
 
 const createWindow = () => {
-  // Création de la fenêtre de navigateur.
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
-    }
-  })
+  	// Création de la fenêtre de navigateur.
+  	const mainWindow = new BrowserWindow({
+    	width: 800,
+    	height: 600,
+    	webPreferences: {
+      		preload: path.join(__dirname, 'preload.js')
+    	}
+	})
+	//on ne veut pas de la bare de menu
+	mainWindow.removeMenu()
+  	// et chargement de l'index.html de l'application.
+  	mainWindow.loadFile('index.html')
 
-  // et chargement de l'index.html de l'application.
-  mainWindow.loadFile('index.html')
-
-  // Ouvrir les outils de développement.
-  // mainWindow.webContents.openDevTools()
-}
+  	// Ouvrir les outils de développement.
+  	// mainWindow.webContents.openDevTools()
+}	
 
 // Cette méthode sera appelée quand Electron aura fini
 // de s'initialiser et sera prêt à créer des fenêtres de navigation.
