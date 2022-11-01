@@ -11,24 +11,20 @@
 </head>
 
 <body>
-  <script src="js/body.js "></script>
-  <section class="home-section">
-    	<div class="title">Dashboard</div>
-        <div class="central">
-			<div class="ecoscore", id="ecoscore">
-
+	<script src="js/body.js "></script>
+	<section class="home-section">
+		<div class="title">Analytics division</div>
+		<div>
+			<div class="radardiv">
+				<canvas id="radar"></canvas>
 			</div>
-			<p class="arbre", id="arbre">
-				<!-- image ici-->
-			</p>
-			<div>
-				Votre consommation de la semaine 0
+			<div class="doughnutdiv">
+				<canvas id="doughnut"></canvas>
 			</div>
-        </div>
-  </section>
-
-  <script src="js/script.js"></script>
-  <script src="js/index.js"></script>
-
+		</div>
+	</section>
+	<script src="js/script.js"></script>
+	<script src="node_modules/chart.js/dist/Chart.js"></script>
+	<script src="js/analytics2.js"></script>
 </body>
 </html>

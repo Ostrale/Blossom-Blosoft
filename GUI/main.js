@@ -2,12 +2,15 @@
 
 // Modules de controle du cycle de vie de l'application et de création 
 // de fenêtre native de navigateur
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, globalShortcut  } = require('electron')
 const path = require('path')
+
+var devtoolsstate = false;
 
 const createWindow = () => {
   	// Création de la fenêtre de navigateur.
   	const mainWindow = new BrowserWindow({
+		minWidth: 510,
     	width: 800,
     	height: 600,
     	webPreferences: {
@@ -20,7 +23,22 @@ const createWindow = () => {
   	mainWindow.loadFile('index.html')
 
   	// Ouvrir les outils de développement.
-  	// mainWindow.webContents.openDevTools()
+  	//mainWindow.webContents.openDevTools()
+
+	//F5 actualiser page
+	globalShortcut.register('f5', function() {
+		mainWindow.reload()
+	});
+	//F9 Ouvrir les outils de développement
+	globalShortcut.register('f9', function() {
+		if(!devtoolsstate){
+			mainWindow.webContents.openDevTools();
+			devtoolsstate = true;
+		}else{
+			mainWindow.webContents.closeDevTools();
+			devtoolsstate = false;
+		}	
+	});
 }	
 
 // Cette méthode sera appelée quand Electron aura fini

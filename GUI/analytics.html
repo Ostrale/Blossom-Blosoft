@@ -11,55 +11,49 @@
 </head>
 
 <body>
-    <style>
-        body {
-            background-image: url('image/forest-6761846.jpg');
-            background-repeat: no-repeat;
-        }
-        </style>
-  <div class="sidebar">
-    <div class="logo-details">
-      	<i class='bx icon'><img class='bx icon'src="image/logo.png"></i>
-        	<div class="logo_name">Blosoft</div>
-        	<i class='bx bx-menu' id="btn" ></i>
-    </div>
-    <ul class="nav-list">
-      	<li>
-        	<a href="#", class="dashboardBtn">
-          	<i class='bx bx-grid-alt'></i>
-          	<span class="links_name">Dashboard</span>
-        	</a>
-         	<span class="tooltip">Dashboard</span>
-      	</li>
-     	<li>
-     	 <a href="#", class="analyticsBtn">
-     	    <i class='bx bx-pie-chart-alt-2' ></i>
-     	    <span class="links_name">Analytics</span>
-     	  </a>
-     	  <span class="tooltip">Analytics</span>
-     	</li>
-     	<li>
-     	  <a href="#", class="settingBtn">
-     	    <i class='bx bx-cog' ></i>
-     	    <span class="links_name">Setting</span>
-     	  </a>
-     	  <span class="tooltip">Setting</span>
-     	</li>
-     	<li class="profile">
-        	<div class="logo_name">Blosoft By Vert-Y-Good</div>
-        	 	<i class='bx bx-log-out' id="log_out" ></i>
-     	</li>
-    </ul>
-</div>
-<section class="home-section">
-    <div class="title">Analytics</div>
-    <div>
-		<div class="chart">
-			<canvas id="myChart"></canvas>
+	<script src="js/body.js "></script>
+	<section class="home-section">
+		<div class="title">Analytics</div>
+		<div class="numbers">
+			<div class="number", id="bla">
+				<div class="number-value">263</div>
+				<div class="number-title">Total consumption</div>
+			</div>
+			<div class="number">
+				<div class="number-value">1402</div>
+				<div class="number-title">Day consumption</div>
+			</div>
+			<div class="number">
+				<div class="number-value">5</div>
+				<div class="number-title">Week consumption</div>
+			</div>
+			<div class="number">
+				<div class="number-value">77</div>
+				<div class="number-title">Your Ecoscore</div>
+			</div>
+			<div class="number">
+				<div class="number-value">999</div>
+				<div class="number-title">Compared to last day</div>
+			</div>
+			<div class="number">
+				<div class="number-value">0</div>
+				<div class="number-title">Compared to last week</div>
+			</div>
 		</div>
-
-    </div>
-</section>
+		<div class="charts">
+			<div class="chart">
+				<canvas id="myChart"></canvas>
+			</div>
+			<div class="chart">
+				<canvas id="myChart2"></canvas>
+			</div>
+		</div>
+		<div class="divisions">
+			<div class="chart-bar">
+				<canvas id="myChart3"></canvas>
+			</div>
+		</div>
+	</section>
 
 	<script src="js/script.js"></script>
 	<script src="node_modules/chart.js/dist/Chart.js"></script>

@@ -3,6 +3,7 @@ let closeBtn = document.querySelector("#btn");
 let settingsBtn = document.querySelector(".settingBtn");
 let dashboardBtn = document.querySelector(".dashboardBtn");
 let analyticsBtn = document.querySelector(".analyticsBtn");
+let analyticsBtn2 = document.querySelector(".analyticsBtn2");
 let log_outBtn = document.querySelector(".bx-log-out");
 
 closeBtn.addEventListener("click", ()=>{
@@ -44,6 +45,15 @@ analyticsBtn.addEventListener("click", ()=>{
       window.open("analytics.html", "_self");
     }, time);
   
+});
+
+analyticsBtn2.addEventListener("click", ()=>{
+  let time = 0;
+  if(sidebar.classList.contains("open")){sidebar.classList.toggle("open");time=500;}
+  setTimeout(() => {
+    window.open("analytics2.html", "_self");
+  }, time);
+
 });
 
 log_outBtn.addEventListener("click", ()=>{

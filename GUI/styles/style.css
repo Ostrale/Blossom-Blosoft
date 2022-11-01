@@ -6,17 +6,11 @@ html {
 *, *:before, *:after {
     box-sizing: inherit;
 }
-  
-body {
-    margin : 0;
-    background-color: #c6d9e6;
-    color: #210e00;
-    font-family: Arial, Helvetica, sans-serif;
-}
+
   
 section, aside, div {
-  	padding: 20px;
-  	border-radius: 30px;
+  	padding: 15px;
+  	border-radius: 50px;
   
 }
 
@@ -31,26 +25,6 @@ section, aside, div {
 }
 .green {
   	background-color:#90dd8cc2; 
-}
-
-p{
-  	font-size: 1rem;
-
-}
-h1 { 
-  	font-size: 4rem; 
-}
-
-h2 { 
-  	font-size: 2rem;
-  	margin-BOTTOM: 0; 
-}	
-div {
- 	margin-TOP: 0em;
-}
-
-h1, h2, h3 {
-  	margin-top: 0px;
 }
 
 .flex-container {
@@ -320,9 +294,9 @@ h1, h2, h3 {
 .home-section .title{
   	display: inline-block;
   	color: #210e00;
-  	font-size: 25px;
+  	font-size: 3vw;
   	font-weight: 500;
-  	margin: 18px;
+  	margin-left: 18px;
   	font-weight: 600;
   	font-family: "Poppins" , sans-serif;
 }
@@ -331,13 +305,75 @@ h1, h2, h3 {
     	display: none;
   	}
 }
+.numbers{
+	padding: 0;
+	padding-left: 2.75vw;
 
+}
+.charts{
+	padding: 0%;
+	padding-top: 7%;
+	align-items: center;
+}
+.divisions{
+	padding: 0%;
+	padding-left: 2.75vw;
+	height: 7%;
+	font-family: "Poppins" , sans-serif;
+	font-size: 1.5vw;
+}
 .chart{
-  	position: relative;
   	width: 50%;
-  	height: 50%;
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	flex-direction: column;
+  	height: 40%;
+	float: left;
+}
+.number{
+	position: relative;
+	float: left;
+	width: 16%;
+	height: 5vw;
+	border-left: #0e2b0c 3px solid;
+	border-radius: 0px;
+	min-width: 12vw;
+}
+.number-title{
+	padding: 0%;
+	font-family: "Poppins" , sans-serif;
+	font-size: 1.1vw;
+}
+.number-value{
+	padding: 0%;
+	font-family: "Poppins" , sans-serif;
+	font-size: 2.5vw;
+}
+.chart-bar{
+	width: 100%;
+	height: 25vh;
+	overflow: hidden;
+}
+.central{
+	font-family: "Poppins" , sans-serif;
+	align-items: center;
+	width: 100%;
+	text-align: center;
+}
+img{
+	max-height:45vh;
+	margin: 2%;
+}
+.ecoscore{
+	font-family: "Poppins" , sans-serif;
+	font-size: 2.5vw;
+	text-align: center;
+}
+
+.radardiv{
+	width: 50%;
+	height: 40vw;
+	float: left;
+}
+.doughnutdiv{
+	width: 50%;
+	height: 40vw;
+	float: right;
 }
