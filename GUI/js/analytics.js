@@ -48,14 +48,14 @@ const labels_bar = [
 ];
 
 const data_bar = {
-  labels: labels_bar,
-  datasets: [
-    {
-      label: 'Consumption (Mb)',
-      data: [1, 10, 5, 2, 20, 30, 45],
-      backgroundColor: 'rgb(50, 50, 150)',
-    }
-  ]
+  	labels: labels_bar,
+  	datasets: [
+    	{
+      	label: 'Consumption (Mb)',
+      	data: [1, 10, 5, 2, 20, 30, 45],
+      	backgroundColor: 'rgb(50, 50, 150)',
+    	}
+  	]
 };
 const config_bar = {
     type: 'bar',
@@ -64,12 +64,12 @@ const config_bar = {
         maintainAspectRatio: false,
         responsive: true,
         plugins: {
-          legend: {
-          position: 'left',
+          	legend: {
+          	position: 'left',
         },
         title: {
-          display: true,
-          text: 'Your Division'
+          	display: true,
+          	text: 'Your Division'
         }
       }
     },
