@@ -4,8 +4,8 @@ project(Blossom-Blosoft VERSION 0.1.0)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
-find_library(tins packet ws2_32 phlpapi wpcap)
-link_libraries(${ProjectName} tins packet ws2_32 phlpapi wpcap)
+find_library(tins packet ws2_32 phlpapi wpcap nDPI)
+link_libraries(${ProjectName} tins packet ws2_32 phlpapi wpcap nDPI)
 
 add_compile_definitions(TINS_STATIC)
 
