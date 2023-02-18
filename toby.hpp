@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <tins/tins.h>
+#include <ndpi_main.h>
 
 using namespace Tins;
 
@@ -11,14 +12,6 @@ using namespace Tins;
 std::string convertSize(double size);
 
 struct renifleur{
-
-    int data_size = 0;
-    int streaming_size = 0;
-    int web_size = 0;
-    int mail_size = 0;
-    int cloud_size = 0;
-    int market_size = 0;
-    int other_size = 0;
 
     void renifle(){
         // Create sniffer configuration object.
@@ -35,57 +28,56 @@ struct renifleur{
         // Now instantiate the sniffer
         Sniffer sniffer(iface.name(),config);
         sniffer.sniff_loop(make_sniffer_handler(this, &renifleur::lecture));
+
+        // Initialisation de nDPI
+        ndpi_init_prefs init_prefs = ndpi_no_prefs;
+        struct ndpi_detection_module_struct* ndpi_struct = ndpi_init_detection_module(init_prefs);
+        NDPI_PROTOCOL_BITMASK protos;
+        NDPI_BITMASK_SET_ALL(protos);
+        ndpi_set_protocol_detection_bitmask2(ndpi_struct, &protos);
+        ndpi_finalize_initialization(ndpi_struct);
     }
 
-    bool lecture(PDU& pkt){
-        // Lookup the IP PDU
-        if(pkt.find_pdu<IP>() && pkt.find_pdu<TCP>()){
-            const IP &ip = pkt.rfind_pdu<IP>();
-            const TCP &tcp = pkt.rfind_pdu<TCP>();
-            int size_of_packet_ip = ip.tot_len();
-            data_size += size_of_packet_ip;
-            // Check the destination port
-            if (tcp.dport() == 80 || tcp.dport() == 8080 || tcp.dport() == 443 || tcp.dport() == 5222) { //vérif 5222
-                // Lookup the payload of the packet
-                const RawPDU &raw = pkt.rfind_pdu<RawPDU>();
-                // Get a string representation of the payload
-                std::string payload = std::string(raw.payload().begin(), raw.payload().end());
-                // Check if the payload starts with "GET" or "POST"
-                if (payload.find("GET") == 0 || payload.find("POST") == 0) { // a comprendre #TODO 
-                    web_size += size_of_packet_ip;
-                } else {
-                    other_size += size_of_packet_ip;
-            }
-            } else if (tcp.dport() == 25) {
-                mail_size += size_of_packet_ip;
-            } else {
-                other_size += size_of_packet_ip;
-            }
-        }else if(pkt.find_pdu<IPv6>() && pkt.find_pdu<TCP>()){
-            const IPv6 &ipv6 = pkt.rfind_pdu<IPv6>();
-            const TCP &tcp = pkt.rfind_pdu<TCP>();
-            int size_of_packet_ipv6 = ipv6.payload_length();
-            data_size += size_of_packet_ipv6;
-            // Check the destination port
-            if (tcp.dport() == 80 || tcp.dport() == 8080 || tcp.dport() == 443 || tcp.dport() == 5222) { //vérif 5222
-                web_size += size_of_packet_ipv6;
-            } else if (tcp.dport() == 25) {
-                mail_size += size_of_packet_ipv6;
-            } else {
-                other_size += size_of_packet_ipv6;
-            }
+    bool lecture(PDU& pdu){
+
+        // On caste les données brutes dans un objet RawPDU
+        RawPDU& raw = pdu.rfind_pdu<RawPDU>();
+        //On récupère les données brutes
+        const uint8_t *packet_data = raw.payload().data();
+        //On récupère la taille des données
+        unsigned int packet_size = raw.payload().size();
+        unsigned short packetlen = packet_size;
+
+        // Initialisation du flux
+        ndpi_detection_module_struct *ndpi_struct = ndpi_init_detection_module( ndpi_no_prefs );  
+
+        if (ndpi_struct == NULL) {
+            std::cerr << "Erreur lors de l'initialisation de la structure ndpi_struct" << std::endl;
+            exit(1);
         }
-        std::cout << "Data usage:" << convertSize(data_size) <<
-            "Web:" << convertSize(web_size) <<
-            "Mail:" << convertSize(mail_size) <<
-            "Streaming:" << convertSize(streaming_size) <<
-            "Cloud:" << convertSize(cloud_size) <<
-            "Market:" << convertSize(market_size) <<
-            "Other:" << convertSize(other_size) <<
-            '\r' << std::flush;
-        //boucle infini
-        return true;
+
+        // Initialisation du flow
+        struct ndpi_flow_struct *flow = (struct ndpi_flow_struct*)malloc(sizeof(struct ndpi_flow_struct));
+
+        // Utiliser ndpi_detection_process_packet() pour détecter le protocole et la catégorie du flux
+        ndpi_protocol protocol = ndpi_detection_process_packet(ndpi_struct, flow, packet_data, packetlen, 0, 0);
+
+        //détection du catégorie
+        u_int16_t category = flow->guessed_category;
+
+        // Afficher la catégorie
+        ndpi_protocol_category_t category_trouve = ndpi_get_proto_category(ndpi_struct, protocol);
+        char* name_category = ndpi_get_proto_name(ndpi_struct, protocol.category);
+        std::string name_category_string(name_category != nullptr ? name_category : "pointeur null");
+        std::cout << "Category: " << category_trouve << ' ' << protocol.category << std::endl;
+        
+        //std::cout << "Protocol: "  << ndpi_get_proto_name(ndpi_struct, protocol.category) << std::endl;
+
+    return true;
     }
+
+    // Libération de la mémoire
+    //#TODO
 };
 
 #endif // TOBY_HPP
