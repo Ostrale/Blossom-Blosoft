@@ -1,7 +1,5 @@
 #include <string>
 #include <vector>
-#include <tins/tins.h>
-using namespace Tins;
 
 //fonction qui converti les octets en ko, mo, go en arrondissant à 2 chiffres après la virgule
 std::string convertSize(double size)

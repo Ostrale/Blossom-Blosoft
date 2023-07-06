@@ -70,6 +70,7 @@
         "xutility": "cpp",
         "mutex": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "*.txt": "cpp"
     }
 }
