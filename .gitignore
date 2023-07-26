@@ -1,2 +1,3 @@
-build/
-GUI/node_modules/
+**/build/
+GUI/node_modules/ 
+Blosoft_GUI/node_modules/
