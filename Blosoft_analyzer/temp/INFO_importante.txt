@@ -1,0 +1,15 @@
+Pour savoir si vous devez donner un nouveau flux ou l’ancien, vous devez vérifier si le paquet que vous voulez analyser appartient au même flux que le paquet précédent. Pour cela, vous pouvez comparer les caractéristiques des paquets, 
+comme l’adresse IP source, l’adresse IP destination, le port source, le port destination et le protocole. 
+Si ces caractéristiques sont identiques, cela signifie que les paquets font partie du même flux et que vous pouvez utiliser la même structure ndpi_flow_struct. 
+Si ces caractéristiques sont différentes, cela signifie que les paquets font partie de flux différents et que vous devez utiliser une nouvelle structure ndpi_flow_struct.
+
+Vous pouvez également utiliser la fonction ndpi_detection_giveup pour savoir si un flux est terminé ou non. 
+Cette fonction renvoie un entier qui indique si le protocole du flux a été détecté ou non. Si le protocole a été détecté, 
+cela signifie que le flux est terminé et que vous pouvez libérer la mémoire de la structure ndpi_flow_struct avec ndpi_flow_free ou delete. 
+Si le protocole n’a pas été détecté, cela signifie que le flux n’est pas terminé et que vous devez conserver la structure ndpi_flow_struct pour les prochains paquets.
+
+Le code nDPI utilise une fonction appelée ndpi_search_quic qui est définie dans le fichier src/lib/protocols/quic.c1. Cette fonction analyse le contenu des paquets QUIC et essaie d’extraire des informations telles que le SNI 
+(Server Name Indication) ou le UAID (User Agent ID) qui peuvent indiquer l’application associée au protocole QUIC. Par exemple, si le SNI contient “youtube.com” ou si le UAID contient “Chrome”, 
+la fonction peut classer le protocole QUIC comme YouTube.
+
+Cependant, il se peut que la fonction ndpi_search_quic ne soit pas capable de détecter certains paquets QUIC comme étant YouTube, pour plusieurs raisons possibles :
