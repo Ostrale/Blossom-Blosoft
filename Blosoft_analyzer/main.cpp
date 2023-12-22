@@ -374,5 +374,7 @@ int main() {
     // Print the detected protocols
     print_detected_protocols(protocols);
 
+    ndpi_exit_detection_module(ndpi_struct);
+
     return 0;
 }
