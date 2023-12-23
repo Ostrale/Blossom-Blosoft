@@ -9,6 +9,9 @@
 # include <memory>
 #include <algorithm> // for std::remove
 
+#include <time.h>
+#define TEMPS_DE_RUN 60 // en secondes
+
 // Define comportement of the program
 #define TEST
 #define DEBUG
@@ -23,6 +26,7 @@ struct packet_struct {
     uint64_t timestamp;
     unsigned char* packet_data;
     uint16_t packetlen;
+    uint32_t packetbytes;
     ndpi_flow_input_info input_info = {NULL, NULL};
     /*
     ndpi_flow_input_info *input_info
@@ -64,7 +68,7 @@ struct App_Protocol{ // in bytes
 
 void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::vector<std::unique_ptr<flow_struct>> &flows, std::vector<std::unique_ptr<flow_struct>> &archived_flows) {
     // Fossayeur de flux
-
+    //FIXME 
     //Si le flux est un flux TCP, il regarde si le paquet contient un flag FIN et ACK, qui indique que les deux parties veulent terminer la connexion. Dans ce cas, il met à jour le champ flow_fin_ack_seen du flux et le déplace dans la liste des flux inactifs.
     //Si le flux a dépassé un certain temps d’inactivité (défini par MAX_IDLE_TIME), il le déplace aussi dans la liste des flux inactifs.
     //Si le flux a atteint le nombre maximum de paquets à traiter pour la détection (défini par 0xFF), il arrête d’ajouter des paquets à ce flux et essaie de deviner son protocole avec la fonction ndpi_detection_giveup
@@ -74,7 +78,7 @@ void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::ve
         const Tins::TCP *tcp = pdu.find_pdu<Tins::TCP>();
         if (tcp != nullptr) {
             if (tcp->get_flag(Tins::TCP::FIN) && tcp->get_flag(Tins::TCP::ACK)) {
-                flow_is_done = true;
+                //flow_is_done = true;
             }
         }
     }
@@ -84,16 +88,15 @@ void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::ve
     }
     // number of packets : 0xFF
     if (flow->packets.size() > 0xFF) {
-        flow_is_done = true;
+        //flow_is_done = true;
     }
 
     if (flow_is_done) {
         // vérifiez si le protocole est connu
-        uint8_t is_proto_guessed_value = 0; // Initialise avec une valeur par défaut
-        uint8_t* is_proto_guessed = &is_proto_guessed_value;
-        if (flow->info.detected_protocol.master_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        uint8_t is_proto_guessed = 0; // Initialise avec une valeur par défaut
+        if (flow->info.detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
             // Appel de la fonction ndpi_detection_giveup pour essayer de deviner le protocole en dernier recours
-            ndpi_detection_giveup(ndpi_struct, &flow->ndpi_flow, 1, is_proto_guessed);
+            ndpi_detection_giveup(ndpi_struct, &flow->ndpi_flow, 1, &is_proto_guessed);
             // TODO: Gérer le cas où le protocole est inconnu
         }
    
@@ -112,11 +115,19 @@ void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::ve
 bool compare_flow(flow_struct &flow, const flow_info &info_packet) {
     if (flow.info.family == info_packet.family) {
         if (flow.info.family == AF_INET) {
+            // compare the source and destination IP addresses and ports 
             if (flow.info.src_ip == info_packet.src_ip && flow.info.dst_ip == info_packet.dst_ip && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) {
+                return true;
+            }
+            // compare the source and destination IP addresses and ports but at response
+            if (flow.info.src_ip == info_packet.dst_ip && flow.info.dst_ip == info_packet.src_ip && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port) {
                 return true;
             }
         } else if (flow.info.family == AF_INET6) {
             if (flow.info.src_ipv6 == info_packet.src_ipv6 && flow.info.dst_ipv6 == info_packet.dst_ipv6 && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) {
+                return true;
+            }
+            if (flow.info.src_ipv6 == info_packet.dst_ipv6 && flow.info.dst_ipv6 == info_packet.src_ipv6 && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port) {
                 return true;
             }
         }
@@ -168,12 +179,17 @@ int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &
 
 std::vector<App_Protocol> protocols;
 
-void detected_protocols( flow_struct &flow, std::vector<App_Protocol> &protocols) {
+void detected_protocols( flow_struct &flow, std::vector<App_Protocol> &protocols) { 
     const char* appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow.info.detected_protocol.app_protocol);
     //const char* appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow.ndpi_flow.detected_protocol_stack[0]); //
-    // si c'est un QUIC, il faut regarder le ALPN
-    if (flow.ndpi_flow.detected_protocol_stack[0] == NDPI_PROTOCOL_QUIC) {
-        // pour tous les paquets du flux
+    if (flow.info.detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        u_int8_t* protocol_was_guessed = new u_int8_t; // Allouer de la mémoire pour la variable
+        *protocol_was_guessed = 0; // Initialiser la valeur de la variable
+
+        auto a = ndpi_detection_giveup(ndpi_struct, &flow.ndpi_flow, 1, protocol_was_guessed);
+        appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow.ndpi_flow.detected_protocol_stack[0]);
+
+        delete protocol_was_guessed;
     }
     bool found = false;
     for (int i = 0; i < protocols.size(); i++){
@@ -181,7 +197,7 @@ void detected_protocols( flow_struct &flow, std::vector<App_Protocol> &protocols
             protocols[i].flows++;
             for (auto &packet : flow.packets){
                 protocols[i].packets++;
-                protocols[i].bytes += packet.packetlen;
+                protocols[i].bytes += packet.packetbytes;
             }
             found = true;
         }
@@ -192,14 +208,10 @@ void detected_protocols( flow_struct &flow, std::vector<App_Protocol> &protocols
         new_protocol.flows = 1;
         for (auto &packet : flow.packets){
             new_protocol.packets++;
-            new_protocol.bytes += packet.packetlen;
+            new_protocol.bytes += packet.packetbytes;
         }
         protocols.push_back(new_protocol);
     }
-}
-
-void QUIC_detection(const flow_struct &flow) {
-    flow.ndpi_flow.protos.tls_quic.advertised_alpns;
 }
 
 void print_detected_protocols(std::vector<App_Protocol> &protocols){
@@ -222,7 +234,7 @@ void set_packet_info(const Tins::IP *ipv4_pdu, const Tins::IPv6 *ipv6_pdu, const
         std::vector<uint8_t> packet_vector = ip.serialize();
         packet.packet_data = new unsigned char[packet_vector.size()];
         std::copy(packet_vector.begin(), packet_vector.end(), packet.packet_data);
-        packet.packetlen = static_cast<uint16_t>(packet_vector.size());
+        packet.packetlen = static_cast<uint16_t>(packet_vector.size()); 
     } else if (ipv6_pdu != nullptr) {
         Tins::IPv6 ipv6 = ipv6_pdu->rfind_pdu<Tins::IPv6>();
         packet_info.family = AF_INET6;
@@ -231,7 +243,7 @@ void set_packet_info(const Tins::IP *ipv4_pdu, const Tins::IPv6 *ipv6_pdu, const
         std::vector<uint8_t> packet_vector = ipv6.serialize();
         packet.packet_data = new unsigned char[packet_vector.size()];
         std::copy(packet_vector.begin(), packet_vector.end(), packet.packet_data);
-        packet.packetlen = static_cast<uint16_t>(packet_vector.size());
+        packet.packetlen = static_cast<uint16_t>(packet_vector.size()); 
     }
 }
 
@@ -296,7 +308,7 @@ int main() {
     std::wcout << " (" << iface.friendly_name() << ")" << std::endl;
 
 #if defined TEST
-    Tins::FileSniffer sniffer("data/a.pcap");  // Open the pcap file for reading
+    Tins::FileSniffer sniffer("data/a.pcap");  //XXX Open the pcap file for reading
 #elif !defined TEST
     Tins::Sniffer sniffer(iface.name(), config);  // Instantiate the sniffer
 #endif
@@ -307,6 +319,7 @@ int main() {
     ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all); 
     ndpi_finalize_initialization(ndpi_struct);
 
+    int start_time = time(NULL);
     // Sniff packets in a loop
     sniffer.sniff_loop([&](const Tins::PDU &pdu) -> bool {
         const Tins::IP *ipv4_pdu = pdu.find_pdu<Tins::IP>();
@@ -342,6 +355,9 @@ int main() {
             // Set source/destination ports and packet type (TCP/UDP)
             set_packet_ports_and_type(tcp, udp, packet_info);
 
+            // Set packet length
+            packet.packetbytes = pdu.size();
+
             // Read and process the packet
             read_packet(&packet_info, packet, pdu, flows, archived_flows);
 
@@ -350,7 +366,17 @@ int main() {
         } else {
             // TODO: Handle other protocols like ICMP or ICMPv6 individually
         }
+        
+#if !defined TEST
+        if (time(NULL) - start_time > TEMPS_DE_RUN) {
+            return false;
+        } else {
+            return true;
+        }
+#else defined TEST
         return true;
+#endif
+
     });
 
     // Print size of flows
@@ -358,7 +384,7 @@ int main() {
 
 #ifdef DEBUG
     // Print size of archived flows (if DEBUG is defined)
-    std::cout << "Size of archived flows: " << archived_flows.size() << std::endl;
+    std::cout << "Size of archived flows: " << archived_flows.size() << std::endl; 
 #endif
 
     // Move flows to archived flows
