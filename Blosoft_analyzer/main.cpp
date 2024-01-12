@@ -134,18 +134,6 @@ bool find_and_move_flow(const flow_info &info_packet, std::vector<std::unique_pt
     return false;  // Flux non trouvé
 }
 
-bool find_and_move_flow(const flow_info &info_packet, std::unordered_map<flow_info, std::unique_ptr<flow_struct>> &flows, std::unique_ptr<flow_struct> &flow_found_ptr) {
-    auto it = flows.find(info_packet);
-
-    if (it != flows.end()) {
-        // Flux trouvé, transfert de propriété
-        flow_found_ptr = std::move(it->second);
-        flows.erase(it); // Supprime le flux du vecteur flows
-        return true;
-    }
-
-    return false;  // Flux non trouvé
-}
 
 int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &pdu, std::vector<std::unique_ptr<flow_struct>> &flows, std::vector<std::unique_ptr<flow_struct>> &archived_flows) {
     std::unique_ptr<flow_struct> flow_to_process_ptr;
