@@ -5,6 +5,8 @@
 #include <cassert>
 #include <string>
 
+#include <unordered_map> // for std::unordered_map (fonction de hachage)
+
 #include <iomanip>
 # include <memory>
 #include <algorithm> // for std::remove
@@ -16,6 +18,14 @@
 #define TEST
 #define DEBUG
 
+#ifdef DEBUG
+    #include <chrono>
+    #define DEBUG_PRINT(x) std::cout << x << std::endl;
+    std::vector<std::chrono::steady_clock::duration> time_points_find_and_move_flow;
+#else
+    #define DEBUG_PRINT(x)
+#endif
+
 // Define constants
 #define MAX_IDLE_TIME 300000 /* msec */
 
@@ -26,7 +36,7 @@ struct packet_struct {
     uint64_t timestamp;
     unsigned char* packet_data;
     uint16_t packetlen;
-    uint32_t packetbytes;
+    uint32_t packetbytes; 
     ndpi_flow_input_info input_info = {NULL, NULL};
     /*
     ndpi_flow_input_info *input_info
@@ -69,27 +79,8 @@ struct App_Protocol{ // in bytes
 void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::vector<std::unique_ptr<flow_struct>> &flows, std::vector<std::unique_ptr<flow_struct>> &archived_flows) {
     // Fossayeur de flux
     //FIXME 
-    //Si le flux est un flux TCP, il regarde si le paquet contient un flag FIN et ACK, qui indique que les deux parties veulent terminer la connexion. Dans ce cas, il met à jour le champ flow_fin_ack_seen du flux et le déplace dans la liste des flux inactifs.
-    //Si le flux a dépassé un certain temps d’inactivité (défini par MAX_IDLE_TIME), il le déplace aussi dans la liste des flux inactifs.
-    //Si le flux a atteint le nombre maximum de paquets à traiter pour la détection (défini par 0xFF), il arrête d’ajouter des paquets à ce flux et essaie de deviner son protocole avec la fonction ndpi_detection_giveup
     bool flow_is_done = false;
-    // TCP ?
-    if (flow->info.is_tcp) {
-        const Tins::TCP *tcp = pdu.find_pdu<Tins::TCP>();
-        if (tcp != nullptr) {
-            if (tcp->get_flag(Tins::TCP::FIN) && tcp->get_flag(Tins::TCP::ACK)) {
-                //flow_is_done = true;
-            }
-        }
-    }
-    // time : MAX_IDLE_TIME 
-    if (flow->packets.back().timestamp - flow->packets.front().timestamp > MAX_IDLE_TIME) {
-        flow_is_done = true;
-    }
-    // number of packets : 0xFF
-    if (flow->packets.size() > 0xFF) {
-        //flow_is_done = true;
-    }
+
 
     if (flow_is_done) {
         // vérifiez si le protocole est connu
@@ -112,26 +103,19 @@ void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::ve
 
 
 //compare function that compares IP addresses, ports and protocol of the packet with those of the stream
-bool compare_flow(flow_struct &flow, const flow_info &info_packet) {
-    if (flow.info.family == info_packet.family) {
-        if (flow.info.family == AF_INET) {
-            // compare the source and destination IP addresses and ports 
-            if (flow.info.src_ip == info_packet.src_ip && flow.info.dst_ip == info_packet.dst_ip && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) {
-                return true;
-            }
-            // compare the source and destination IP addresses and ports but at response
-            if (flow.info.src_ip == info_packet.dst_ip && flow.info.dst_ip == info_packet.src_ip && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port) {
-                return true;
-            }
-        } else if (flow.info.family == AF_INET6) {
-            if (flow.info.src_ipv6 == info_packet.src_ipv6 && flow.info.dst_ipv6 == info_packet.dst_ipv6 && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) {
-                return true;
-            }
-            if (flow.info.src_ipv6 == info_packet.dst_ipv6 && flow.info.dst_ipv6 == info_packet.src_ipv6 && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port) {
-                return true;
-            }
-        }
+bool compare_flow(const flow_struct& flow, const flow_info& info_packet) {
+    if (flow.info.family != info_packet.family) {
+        return false;
     }
+
+    if (flow.info.family == AF_INET) {
+        return (flow.info.src_ip == info_packet.src_ip && flow.info.dst_ip == info_packet.dst_ip && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) ||
+               (flow.info.src_ip == info_packet.dst_ip && flow.info.dst_ip == info_packet.src_ip && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port);
+    } else if (flow.info.family == AF_INET6) {
+        return (flow.info.src_ipv6 == info_packet.src_ipv6 && flow.info.dst_ipv6 == info_packet.dst_ipv6 && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) ||
+               (flow.info.src_ipv6 == info_packet.dst_ipv6 && flow.info.dst_ipv6 == info_packet.src_ipv6 && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port);
+    }
+
     return false;
 }
 
@@ -150,9 +134,24 @@ bool find_and_move_flow(const flow_info &info_packet, std::vector<std::unique_pt
     return false;  // Flux non trouvé
 }
 
+bool find_and_move_flow(const flow_info &info_packet, std::unordered_map<flow_info, std::unique_ptr<flow_struct>> &flows, std::unique_ptr<flow_struct> &flow_found_ptr) {
+    auto it = flows.find(info_packet);
+
+    if (it != flows.end()) {
+        // Flux trouvé, transfert de propriété
+        flow_found_ptr = std::move(it->second);
+        flows.erase(it); // Supprime le flux du vecteur flows
+        return true;
+    }
+
+    return false;  // Flux non trouvé
+}
+
 int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &pdu, std::vector<std::unique_ptr<flow_struct>> &flows, std::vector<std::unique_ptr<flow_struct>> &archived_flows) {
     std::unique_ptr<flow_struct> flow_to_process_ptr;
 
+    // TIME
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     // Cherche si le flux existe déjà
     if (find_and_move_flow(*info_packet, flows, flow_to_process_ptr)) {
         // Flux trouvé, transfert de propriété effectué dans la fonction
@@ -164,6 +163,11 @@ int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &
         flow_to_process_ptr->info.family = info_packet->family;
         packet.input_info.seen_flow_beginning = 0;
     }
+    // TIME
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    //push_back end - begin to time_points_find_and_move_flow
+    time_points_find_and_move_flow.push_back(end - begin);
+    
     flow_to_process_ptr->packets.push_back(packet);
     
     ndpi_protocol p_d = ndpi_detection_process_packet(ndpi_struct, &flow_to_process_ptr->ndpi_flow, packet.packet_data, packet.packetlen, packet.timestamp, &packet.input_info);
@@ -175,6 +179,8 @@ int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &
 
     return 0;
 }
+
+
 
 
 std::vector<App_Protocol> protocols;
@@ -385,6 +391,25 @@ int main() {
 #ifdef DEBUG
     // Print size of archived flows (if DEBUG is defined)
     std::cout << "Size of archived flows: " << archived_flows.size() << std::endl; 
+
+    // Print min max and average time of find_and_move_flow
+    std::chrono::steady_clock::duration min = time_points_find_and_move_flow[0];
+    std::chrono::steady_clock::duration max = time_points_find_and_move_flow[0];
+    std::chrono::steady_clock::duration sum = time_points_find_and_move_flow[0];
+
+    for (int i = 1; i < time_points_find_and_move_flow.size(); i++) {
+        if (time_points_find_and_move_flow[i] < min) {
+            min = time_points_find_and_move_flow[i];
+        }
+        if (time_points_find_and_move_flow[i] > max) {
+            max = time_points_find_and_move_flow[i];
+        }
+        sum += time_points_find_and_move_flow[i];
+    }
+
+    std::cout << "Min time of find_and_move_flow: " << std::chrono::duration_cast<std::chrono::microseconds>(min).count() << " microseconds" << std::endl;
+    std::cout << "Max time of find_and_move_flow: " << std::chrono::duration_cast<std::chrono::microseconds>(max).count() << " microseconds" << std::endl;
+    std::cout << "Average time of find_and_move_flow: " << std::chrono::duration_cast<std::chrono::microseconds>(sum / time_points_find_and_move_flow.size()).count() << " microseconds" << std::endl;
 #endif
 
     // Move flows to archived flows

@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "(Windows) Lancer",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/Blosoft_DatabaseManager.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "integratedTerminal",
+        }
+    ],
+    "version": "2.0.0"
+}
