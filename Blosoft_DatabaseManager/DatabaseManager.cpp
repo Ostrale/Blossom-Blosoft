@@ -1,109 +1,87 @@
-// DatabaseManager.cpp
-
 #include <iostream>
-#include "sqlite3.h"
+#include <sqlite3.h>
+#include <vector>
+#include <string>
+
+struct DataEntry {
+    int timestamp;
+    int dataQuantity;
+};
 
 class DatabaseManager {
+private:
+    sqlite3* db;
+
+    static int callback(void* NotUsed, int argc, char** argv, char** azColName) {
+        for (int i = 0; i < argc; i++) {
+            std::cout << azColName[i] << ": " << (argv[i] ? argv[i] : "NULL") << std::endl;
+        }
+        return 0;
+    }
+
 public:
-    static void createTableAndViews() {
-        sqlite3* db;
-        char* errMsg = 0;
-
-        int rc = sqlite3_open("example.db", &db);
-
+    DatabaseManager(const std::string& dbName) {
+        int rc = sqlite3_open(dbName.c_str(), &db);
         if (rc) {
-            std::cerr << "Erreur lors de l'ouverture de la base de données: " << sqlite3_errmsg(db) << std::endl;
-            return;
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            sqlite3_close(db);
+            exit(1);
         }
 
-        // Création de la table principale
-        const char* createTableSQL = "CREATE TABLE Data (id INTEGER PRIMARY KEY, category TEXT, value INTEGER, timestamp DATETIME);";
+        // Create tables if not exists
+        const char* createCategoriesTableQuery = "CREATE TABLE IF NOT EXISTS categories ("
+                                                 "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                 "category TEXT NOT NULL);";
 
-        rc = sqlite3_exec(db, createTableSQL, 0, 0, &errMsg);
+        const char* createDataEntriesTableQuery = "CREATE TABLE IF NOT EXISTS data_entries ("
+                                                  "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                  "category_id INTEGER NOT NULL,"
+                                                  "timestamp INTEGER NOT NULL,"
+                                                  "data_quantity INTEGER NOT NULL,"
+                                                  "FOREIGN KEY (category_id) REFERENCES categories(id));";
 
+        rc = sqlite3_exec(db, createCategoriesTableQuery, callback, 0, 0);
         if (rc != SQLITE_OK) {
-            std::cerr << "Erreur lors de la création de la table : " << errMsg << std::endl;
-            sqlite3_free(errMsg);
-        } else {
-            std::cout << "Table créée avec succès." << std::endl;
+            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+            sqlite3_close(db);
+            exit(1);
         }
 
-        // Création de la vue pour l'agrégation par minute
-        const char* createViewByMinuteSQL = "CREATE VIEW DataByMinute AS \
-                                            SELECT category, SUM(value) AS total_value, \
-                                            strftime('%Y-%m-%d %H:%M', timestamp) AS minute_timestamp \
-                                            FROM Data GROUP BY category, minute_timestamp;";
+        rc = sqlite3_exec(db, createDataEntriesTableQuery, callback, 0, 0);
+        if (rc != SQLITE_OK) {
+            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+            sqlite3_close(db);
+            exit(1);
+        }
+    }
 
-        rc = sqlite3_exec(db, createViewByMinuteSQL, 0, 0, &errMsg);
-
-        // Création de la vue pour l'agrégation par heure
-        const char* createViewByHourSQL = "CREATE VIEW DataByHour AS \
-                                          SELECT category, SUM(total_value) AS total_value, \
-                                          strftime('%Y-%m-%d %H:00', minute_timestamp) AS hour_timestamp \
-                                          FROM DataByMinute GROUP BY category, hour_timestamp;";
-
-        rc = sqlite3_exec(db, createViewByHourSQL, 0, 0, &errMsg);
-
-        // Création de la vue pour l'agrégation par jour
-        const char* createViewByDaySQL = "CREATE VIEW DataByDay AS \
-                                         SELECT category, SUM(total_value) AS total_value, \
-                                         strftime('%Y-%m-%d', hour_timestamp) AS day_timestamp \
-                                         FROM DataByHour GROUP BY category, day_timestamp;";
-
-        rc = sqlite3_exec(db, createViewByDaySQL, 0, 0, &errMsg);
-
-        // Création de la vue pour l'agrégation par semaine
-        const char* createViewByWeekSQL = "CREATE VIEW DataByWeek AS \
-                                          SELECT category, SUM(total_value) AS total_value, \
-                                          strftime('%Y-%W', day_timestamp) AS week_timestamp \
-                                          FROM DataByDay GROUP BY category, week_timestamp;";
-
-        rc = sqlite3_exec(db, createViewByWeekSQL, 0, 0, &errMsg);
-
-        // Création de la vue pour l'agrégation par mois
-        const char* createViewByMonthSQL = "CREATE VIEW DataByMonth AS \
-                                           SELECT category, SUM(total_value) AS total_value, \
-                                           strftime('%Y-%m', day_timestamp) AS month_timestamp \
-                                           FROM DataByDay GROUP BY category, month_timestamp;";
-
-        rc = sqlite3_exec(db, createViewByMonthSQL, 0, 0, &errMsg);
-
-        // Création de la vue pour l'agrégation par an
-        const char* createViewByYearSQL = "CREATE VIEW DataByYear AS \
-                                          SELECT category, SUM(total_value) AS total_value, \
-                                          strftime('%Y', day_timestamp) AS year_timestamp \
-                                          FROM DataByDay GROUP BY category, year_timestamp;";
-
-        rc = sqlite3_exec(db, createViewByYearSQL, 0, 0, &errMsg);
-
-        // Fermeture de la base de données
+    ~DatabaseManager() {
         sqlite3_close(db);
     }
 
-    static void insertTestData() {
-        sqlite3* db;
-        char* errMsg = 0;
+    int insertCategory(const std::string& category) {
+        std::string insertCategoryQuery = "INSERT INTO categories (category) VALUES ('" + category + "');";
 
-        int rc = sqlite3_open("example.db", &db);
-
-        if (rc) {
-            std::cerr << "Erreur lors de l'ouverture de la base de données: " << sqlite3_errmsg(db) << std::endl;
-            return;
-        }
-
-        // Insertion de données de test
-        const char* insertDataSQL = "INSERT INTO Data (category, value, timestamp) VALUES ('example', 10, CURRENT_TIMESTAMP);";
-
-        rc = sqlite3_exec(db, insertDataSQL, 0, 0, &errMsg);
-
+        int rc = sqlite3_exec(db, insertCategoryQuery.c_str(), callback, 0, 0);
         if (rc != SQLITE_OK) {
-            std::cerr << "Erreur lors de l'insertion de données : " << errMsg << std::endl;
-            sqlite3_free(errMsg);
-        } else {
-            std::cout << "Données insérées avec succès." << std::endl;
+            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+            return -1; // Return -1 on error
         }
 
-        // Fermeture de la base de données
-        sqlite3_close(db);
+        return sqlite3_last_insert_rowid(db);
+    }
+
+    void insertDataEntry(int categoryId, const std::vector<DataEntry>& entries) {
+        for (const auto& entry : entries) {
+            std::string insertDataEntryQuery = "INSERT INTO data_entries (category_id, timestamp, data_quantity) VALUES ("
+                                               + std::to_string(categoryId) + ", "
+                                               + std::to_string(entry.timestamp) + ", "
+                                               + std::to_string(entry.dataQuantity) + ");";
+
+            int rc = sqlite3_exec(db, insertDataEntryQuery.c_str(), callback, 0, 0);
+            if (rc != SQLITE_OK) {
+                std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+            }
+        }
     }
 };
