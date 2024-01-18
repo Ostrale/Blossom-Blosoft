@@ -293,7 +293,7 @@ section, aside, div {
 }
 .home-section .title{
   	display: inline-block;
-  	color: #210e00;
+  	color: #170f09;
   	font-size: 3vw;
   	font-weight: 500;
   	margin-left: 18px;
@@ -332,16 +332,18 @@ section, aside, div {
 	float: left;
 	width: 16%;
 	height: 5vw;
-	border-left: #0e2b0c 3px solid;
+	border-left: #153f12 3px solid;
 	border-radius: 0px;
 	min-width: 12vw;
 }
 .number-title{
+	color: #23160d;
 	padding: 0%;
 	font-family: "Poppins" , sans-serif;
 	font-size: 1.1vw;
 }
 .number-value{
+	color: #23160d;
 	padding: 0%;
 	font-family: "Poppins" , sans-serif;
 	font-size: 2.5vw;
