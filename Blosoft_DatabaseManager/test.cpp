@@ -1,4 +1,4 @@
-#include "DatabaseManager.cpp"
+#include "DatabaseManager.hpp"
 
 #define DEBUG
 

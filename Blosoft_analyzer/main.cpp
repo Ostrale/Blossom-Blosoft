@@ -8,8 +8,11 @@
 #include <unordered_map> // for std::unordered_map (fonction de hachage)
 
 #include <iomanip>
-# include <memory>
+#include <memory>
 #include <algorithm> // for std::remove
+
+#include "..\Blosoft_DatabaseManager\include\sqlite\sqlite3.h"
+#include "../Blosoft_DatabaseManager/DatabaseManager.hpp"
 
 #include <time.h>
 #define TEMPS_DE_RUN 60 // en secondes
@@ -279,8 +282,38 @@ int Incoming_outcoming(const Tins::IP *ipv4_pdu, const Tins::IPv6 *ipv6_pdu, con
     return -1; // Erreur : paquet non pris en charge ou informations manquantes
 }
 
+void testbdd() {
+    DatabaseManager dbManager("example_main_db.db");
+
+    // Example data insertion for 'games' category
+    int categoryId = dbManager.insertCategory("games");
+
+    if (categoryId != -1) {
+        std::vector<DataEntry> gameEntries = {{1642531200, 1024}, {1642532400, 512}};
+        dbManager.insertDataEntry(categoryId, gameEntries);
+    }
+
+    // Example data insertion for 'streaming' category
+    int streamingCategoryId = dbManager.insertCategory("streaming");
+
+    if (streamingCategoryId != -1) {
+        std::vector<DataEntry> streamingEntries = {{1642533600, 768}, {1642534800, 256}};
+        dbManager.insertDataEntry(streamingCategoryId, streamingEntries);
+    }
+
+    // Example data insertion for 'games' category again
+    categoryId = dbManager.insertCategory("games");
+
+    if (categoryId != -1) {
+        std::vector<DataEntry> gameEntries = {{1642536000, 1024}, {1642537200, 512}};
+        dbManager.insertDataEntry(categoryId, gameEntries);
+    }
+}
+
 
 int main() {
+    //testbdd();
+    testbdd();
     // Initialize nDPI
     std::vector<App_Protocol> protocols;
     if (ndpi_struct == nullptr) {

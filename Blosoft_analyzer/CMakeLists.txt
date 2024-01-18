@@ -1,18 +1,27 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(Blossom-Blosoft VERSION 0.1.0)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
-link_directories(${CMAKE_SOURCE_DIR}/lib)
+include_directories(${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/../Blosoft_DatabaseManager/include
+)
+link_directories(${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/../Blosoft_DatabaseManager/build/Debug
+)
 
-find_library(tins packet ws2_32 phlpapi wpcap nDPI)
-link_libraries(${ProjectName} tins packet ws2_32 phlpapi wpcap nDPI)
+
+find_library(tins packet ws2_32 phlpapi wpcap nDPI Blosoft_DatabaseManager_library)
+link_libraries(${ProjectName} tins packet ws2_32 phlpapi wpcap nDPI Blosoft_DatabaseManager_library)
 
 add_compile_definitions(TINS_STATIC)
 
 include(CTest)
 enable_testing()
 
-add_executable(Blossom-Blosoft main.cpp src/toby.cpp)
+add_executable(Blossom-Blosoft 
+    main.cpp 
+    src/toby.cpp 
+    ../Blosoft_DatabaseManager/DatabaseManager.hpp
+)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
