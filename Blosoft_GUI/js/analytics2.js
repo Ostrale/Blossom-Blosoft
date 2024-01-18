@@ -49,10 +49,10 @@ const config_radar = {
 	scales: {
       r: {
 		angleLines: {
-			color: '#23160d'
+			color: '#999999'
 		  },
         grid: {
-          color: '#23160d'
+          color: '#999999'
         },
 		pointLabels: {
 			color: '#23160d'
@@ -80,6 +80,7 @@ const data_doughnut = {
 			 'rgba(44,  122, 40, 0.8)',
 			],
 		borderColor:'rgb(0, 0, 0)',
+		borderWidth: 1,
 		hoverBorderWidth: 3,
 		hoverBackgroundColor: 
 			['rgba(200, 108, 24, 1)',

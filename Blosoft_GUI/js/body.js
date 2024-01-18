@@ -33,6 +33,13 @@ document.write(`
          </a>
          <span class="tooltip">Analytics division</span>
        </li>
+      <li>
+       <a href="#", class="analyticsBtn3">
+          <i class='bx bxs-bus'></i>
+          <span class="links_name">Analytics comparison</span>
+        </a>
+        <span class="tooltip">Analytics comparison</span>
+      </li>
      <li>
        <a href="#", class="settingBtn">
          <i class='bx bx-cog' ></i>
