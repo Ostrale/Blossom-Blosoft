@@ -1,5 +1,5 @@
 #include <iostream>
-#include <sqlite3.h>
+#include "..\Blosoft_DatabaseManager\include\sqlite\sqlite3.h"
 #include <vector>
 #include <string>
 
