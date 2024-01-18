@@ -125,8 +125,8 @@ const config_bar = {
           	text: 'Your data usage today (Go)',
             color: '#23160d'
         }
-        },
-        scales: {
+      },
+      scales: {
         x: {
             ticks: {
                 color: '#23160d',

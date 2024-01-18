@@ -2,9 +2,9 @@ import { hoverLabel } from "./doughnut_plugins.js";
 
 const labels_bar = [
     'Streaming',
-    'Web',
-    'Mail',
-    'Cloud',
+    'Web browsing',
+    'Email & IM',
+    'Cloud storage',
     'Web-market',
     'Other',
 ];
@@ -13,13 +13,13 @@ const data_radar = {
   	labels: labels_bar,
   	datasets: [
     	{
-      		label: 'Consumption (Mb)',
-      		data: [1, 10, 55, 18, 20, 45],
+      		label: 'Your data usage today (Go)',
+      		data: [1.5, 0.47, 0.28, 0.56, 0.99, 0.7],
      		backgroundColor: 'rgba(240, 108, 14, 0.4)',
       		borderColor: 'rgba(240, 108, 14, 1)',	
     	},
     	{
-      	label: 'vertuosity (Mb)',
+      	label: 'Vertuous usage (Go)',
       	data: [10, 30, 50, 20, 2, 4],
       	backgroundColor: 'rgba(144, 221, 140, 0.4)',
       	borderColor: 'rgba(44, 122, 40, 1)',
@@ -38,7 +38,7 @@ const config_radar = {
         		},
         	title: {
         	  display: true,
-        	  text: 'Your Division vs Vertuosité'
+        	  text: 'Your data usage vs Vertuous data usage'
         	}
       	},
     },
