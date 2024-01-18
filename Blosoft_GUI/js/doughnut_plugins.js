@@ -44,20 +44,6 @@ export const hoverLabel = {
             ctx.textAlign = 'center';
             ctx.fillText(`${textLabel}: ${numberLabel} Mb`, textX, textY);
             
-        }else{
-            const textLabel = 'Your division';
-            const nb_lettres = (textLabel).length+1;
-
-            var fontSize = (((height / 114)/(0.15*nb_lettres)).toFixed(2));
-            ctx.font = fontSize + "em Helvetica";
-            ctx.textBaseline = "middle";
-    
-            ctx.fillStyle = 'rgba(0, 0, 0, 1)';
-            var text = chart.data.datasets[0].data.reduce((partialSum, a) => partialSum + a, 0),
-            textX = Math.round((width ) / 2),
-            textY = (height / 2) + chart.legend.height + chart.titleBlock.height;
-            ctx.textAlign = 'center';
-            ctx.fillText(textLabel, textX, textY);
         }
         ctx.restore();
 	},

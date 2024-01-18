@@ -1,8 +1,8 @@
 import { hoverLabel } from "./doughnut_plugins.js";
 
 const labels_bar = [
-    'Streaming',
     'Web browsing',
+	'Streaming',
     'Email & IM',
     'Cloud storage',
     'Web-market',
@@ -13,19 +13,20 @@ const data_radar = {
   	labels: labels_bar,
   	datasets: [
     	{
-      		label: 'Your data usage today (Go)',
-      		data: [1.5, 0.47, 0.28, 0.56, 0.99, 0.7],
-     		backgroundColor: 'rgba(240, 108, 14, 0.4)',
-      		borderColor: 'rgba(240, 108, 14, 1)',	
+      		label: 'Your average data usage (Mo)',
+      		data: [0.470, 1.500, 0.280, 0.560, 0.990, 0.700],
+     		backgroundColor: 'rgba(200, 108, 24, 0.4)',
+      		borderColor: 'rgba(200, 108, 24, 1)',	
     	},
     	{
-      	label: 'Vertuous usage (Go)',
-      	data: [10, 30, 50, 20, 2, 4],
+      	label: 'Vertuous usage (Mo)',
+      	data: [0.810, 0.954, 0.520, 0.490, 0.870, 0.1055], 
       	backgroundColor: 'rgba(144, 221, 140, 0.4)',
       	borderColor: 'rgba(44, 122, 40, 1)',
     	}
   	]
 };
+
 const config_radar = {
     type: 'radar',
     data: data_radar,
@@ -35,44 +36,64 @@ const config_radar = {
         plugins: {
           	legend: {
           	position: 'bottom',
+			  labels: {
+				color: '#23160d'
+			}  
         		},
         	title: {
         	  display: true,
-        	  text: 'Your data usage vs Vertuous data usage'
+        	  text: 'Your average data consumption vs Vertuous average data consumption',
+			  color: '#23160d'
         	}
       	},
+	scales: {
+      r: {
+		angleLines: {
+			color: '#23160d'
+		  },
+        grid: {
+          color: '#23160d'
+        },
+		pointLabels: {
+			color: '#23160d'
+		  },
+		ticks: {
+			color: '#23160d'
+		  },
+      }
+    }
     },
 };
+
 const data_doughnut = {
 	labels: labels_bar,
 	datasets: [
 	  {
-		label: 'Consumption (Mb)',
-		data: [1, 10, 55, 18, 20, 45],
+		label: 'Consumption (Go)',
+		data: [1.500, 0.470, 0.280, 0.560, 0.990, 0.700],
 		backgroundColor: 
-			['rgba(240, 108, 14, 0.9)',
-			'rgba(44, 122, 40, 0.9)',
-			'rgba(240, 108, 14, 0.9)',
-			'rgba(44, 122, 40, 0.9)',
-			'rgba(240, 108, 14, 0.9)',
-			'rgba(44, 122, 40, 0.9)',
+			['rgba(200, 108, 24, 0.8)',
+			 'rgba(44,  122, 40, 0.8)',
+			 'rgba(200, 108, 24, 0.8)',
+			 'rgba(44,  122, 40, 0.8)',
+			 'rgba(200, 108, 24, 0.8)',
+			 'rgba(44,  122, 40, 0.8)',
 			],
 		borderColor:'rgb(0, 0, 0)',
-		hoverBorderWidth: 5,
+		hoverBorderWidth: 3,
 		hoverBackgroundColor: 
 			['rgba(200, 108, 24, 1)',
-			'rgba(44, 102, 50, 1)',
-			'rgba(200, 108, 24, 1)',
-			'rgba(44, 102, 50, 1)',
-			'rgba(200, 108, 24, 1)',
-			'rgba(44, 102, 50, 1)',
+			 'rgba(44,  102, 50, 1)',
+			 'rgba(200, 108, 24, 1)',
+			 'rgba(44,  102, 50, 1)',
+			 'rgba(200, 108, 24, 1)',
+			 'rgba(44,  102, 50, 1)',
 			],
 	  	},
 	],
 };
+
 //hoverLabel plugin 
-
-
 const config_doughnut = {
     type: 'doughnut',
     data: data_doughnut ,
@@ -85,7 +106,8 @@ const config_doughnut = {
         		},
         		title: {
         		  	display: true,
-        		  	text: 'Your Division'
+        		  	text: 'Your data usage repartition (Go)',
+					color: '#23160d'
         	}
       	},
     },

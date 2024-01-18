@@ -11,8 +11,8 @@ const data1 = {
     labels: labels1,
     datasets: [{
         label: 'Your consumption over the past months (Go)',
-        backgroundColor: '#153f12',
-        borderColor: '#153f12',
+        backgroundColor: 'rgba(200, 108, 24, 1)',
+        borderColor: 'rgba(200, 108, 24, 1)',
         data: [53, 179, 150, 133, 79, 140],
         cubicInterpolationMode: 'monotone',
         fill: false,
@@ -33,8 +33,8 @@ const data2 = {
     labels: labels2,
     datasets: [{
         label: 'Your consumption over the past days (Go)',
-        backgroundColor: '#153f12',
-        borderColor: '#153f12',
+        backgroundColor: 'rgba(200, 108, 24, 1)',
+        borderColor: 'rgba(200, 108, 24, 1)',
         data: [4.2, 1.5, 7.8, 3.2, 9.1, 5.7, 4.5],
         cubicInterpolationMode: 'monotone',
         fill: false,
@@ -45,7 +45,7 @@ const options = {
     plugins: {
         legend: {
             labels: {
-                color: '23160d'
+                color: '#23160d'
             }
         }
     },
@@ -103,7 +103,7 @@ const data_bar = {
     	{
       	label: 'Your data usage today (Go)',
       	data: [1.5, 0.47, 0.28, 0.56, 0.99, 0.7],
-      	backgroundColor: '#153f12',
+      	backgroundColor: 'rgba(44,  122, 40, 0.8)',
     	}
   	]
 };
