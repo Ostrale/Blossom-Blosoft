@@ -72,7 +72,9 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "reader_util.h": "c",
-        "uthash.h": "c"
+        "uthash.h": "c",
+        "deque": "cpp",
+        "queue": "cpp"
     },
     "cmake.sourceDirectory": "C:/Users/enzod/Desktop/Programmation/Git/Blossom-Blosoft/Blosoft_analyzer"
 }

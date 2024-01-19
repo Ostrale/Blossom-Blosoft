@@ -6,19 +6,20 @@
 #include <string>
 
 #include <unordered_map> // for std::unordered_map (fonction de hachage)
+#include <queue> // for std::queue (file d'attente)
 
 #include <iomanip>
 #include <memory>
 #include <algorithm> // for std::remove
 
-#include "..\Blosoft_DatabaseManager\include\sqlite\sqlite3.h"
+#include "../Blosoft_DatabaseManager/include/sqlite/sqlite3.h"
 #include "../Blosoft_DatabaseManager/DatabaseManager.hpp"
 
 #include <time.h>
-#define TEMPS_DE_RUN 60 // en secondes
+#define TEMPS_DE_RUN 240 // en secondes
 
 // Define comportement of the program
-#define TEST
+//#define TEST
 #define DEBUG
 
 #ifdef DEBUG
@@ -29,8 +30,19 @@
     #define DEBUG_PRINT(x)
 #endif
 
+template <typename T>
+T myMin(const T& a, const T& b) {
+    return (a < b) ? a : b;
+}
+
+template <typename T>
+T myMax(const T& a, const T& b) {
+    return (a > b) ? a : b;
+}
+
+
 // Define constants
-#define MAX_IDLE_TIME 300000 /* msec */
+#define MAX_IDLE_TIME 60000 // 1 minute
 
 extern struct ndpi_detection_module_struct* ndpi_struct = ndpi_init_detection_module(ndpi_no_prefs); // key word to remove  ? #TODO
 
@@ -62,6 +74,54 @@ struct flow_info{
     uint16_t dst_port;
     ndpi_protocol detected_protocol; 
     bool is_tcp;
+    std::chrono::system_clock::time_point creation_timestamp;
+    struct Hash { //TODO : à tester il y a peut être mieux à faire
+        std::size_t operator()(const flow_info& info) const {
+            std::size_t hash = std::hash<int>()(info.family);
+
+            uint16_t min_port = myMin(info.src_port, info.dst_port);
+            uint16_t max_port = myMax(info.src_port, info.dst_port);
+            
+            if (info.family == AF_INET) {
+                uint32_t min_ip = myMin(info.src_ip, info.dst_ip);
+                uint32_t max_ip = myMax(info.src_ip, info.dst_ip);
+
+                hash_combine(hash, min_ip);
+                hash_combine(hash, max_ip);
+            } else if (info.family == AF_INET6) {
+                auto min_ipv6 = myMin(info.src_ipv6, info.dst_ipv6);
+                auto max_ipv6 = myMax(info.src_ipv6, info.dst_ipv6);
+
+                hash_combine(hash, min_ipv6);
+                hash_combine(hash, max_ipv6);
+            }
+
+            hash_combine(hash, min_port);
+            hash_combine(hash, max_port);
+            hash_combine(hash, info.is_tcp);
+
+            return hash;
+        }
+
+        template <typename T>
+        void hash_combine(std::size_t& seed, const T& value) const {
+            seed ^= std::hash<T>()(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed = 0;
+        }
+    };
+    bool operator==(const flow_info& other) const {
+        if (family != other.family) {
+            return false;
+        }
+        if (family == AF_INET) {
+            return (src_ip == other.src_ip && dst_ip == other.dst_ip && src_port == other.src_port && dst_port == other.dst_port) ||
+                   (src_ip == other.dst_ip && dst_ip == other.src_ip && src_port == other.dst_port && dst_port == other.src_port);
+        } else if (family == AF_INET6) {
+            return (src_ipv6 == other.src_ipv6 && dst_ipv6 == other.dst_ipv6 && src_port == other.src_port && dst_port == other.dst_port) ||
+                   (src_ipv6 == other.dst_ipv6 && dst_ipv6 == other.src_ipv6 && src_port == other.dst_port && dst_port == other.src_port);
+        }
+        return false;
+    }
 };
 
 struct flow_struct {
@@ -70,82 +130,109 @@ struct flow_struct {
     std::vector<packet_struct> packets;
 };
 
-struct App_Protocol{ // in bytes
-    std::string name;
-    int packets = 0;
+using FlowsMap = std::unordered_map<flow_info, std::shared_ptr<flow_struct>, flow_info::Hash>;
+using FlowsQueue = std::queue<std::pair<flow_info, std::shared_ptr<flow_struct>>*>;
+
+std::string detect_protocol(std::shared_ptr<flow_struct> &flow) {
+    // use ndpi_get_proto_name to get the name of the protocol
+    const char* appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow->info.detected_protocol.app_protocol);
+
+    if (flow->info.detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        u_int8_t* protocol_was_guessed = new u_int8_t; // Allouer de la mémoire pour la variable
+        *protocol_was_guessed = 0; // Initialiser la valeur de la variable
+
+        auto a = ndpi_detection_giveup(ndpi_struct, &flow->ndpi_flow, 1, protocol_was_guessed);
+        appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow->ndpi_flow.detected_protocol_stack[0]);
+
+        delete protocol_was_guessed;
+    }
+    return appprotocol_name;
+}
+
+std::string detect_Category(std::shared_ptr<flow_struct> &flow) {
+    // use ndpi_get_proto_name to get the name of the category
+    const char* appprotocol_category = ndpi_category_get_name(ndpi_struct, flow->info.detected_protocol.category);
+    if (flow->info.detected_protocol.category == NDPI_PROTOCOL_CATEGORY_UNSPECIFIED) {
+        u_int8_t* category_was_guessed = new u_int8_t; // Allouer de la mémoire pour la variable
+        *category_was_guessed = 0; // Initialiser la valeur de la variable
+
+        auto a = ndpi_detection_giveup(ndpi_struct, &flow->ndpi_flow, 1, category_was_guessed);
+        appprotocol_category = ndpi_category_get_name(ndpi_struct, flow->info.detected_protocol.category);
+
+        delete category_was_guessed;
+    }
+
+    return appprotocol_category;
+}
+
+void save_to_database(std::shared_ptr<flow_struct>& flow) {
+    DatabaseManager dbManager("BlosoftDB.db");
+
+    std::string name_protocol = detect_protocol(flow);
+    std::string name_category = detect_Category(flow);
+
+    int categoryId = dbManager.getCategoryId(name_category);
+
+    if (categoryId == -1) {
+        categoryId = dbManager.insertCategory(name_category);
+    }
+
+    // Summing the bytes of all packets in the flow
     int bytes = 0;
-    int flows = 0;
-};
+    for (auto &packet : flow->packets) {
+        bytes += packet.packetbytes;
+    }
+    // Taking the timestamp of the flow from flow->info.creation_timestamp
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(flow->info.creation_timestamp.time_since_epoch()).count();
 
+    // Creating a DataEntry object
+    DataEntry dataEntry{timestamp, bytes};
 
+    // Creating a vector of DataEntry objects
+    std::vector<DataEntry> dataEntries;
+    dataEntries.push_back(dataEntry);
 
-void flow_heal_check(std::unique_ptr<flow_struct> &flow, Tins::PDU &pdu, std::vector<std::unique_ptr<flow_struct>> &flows, std::vector<std::unique_ptr<flow_struct>> &archived_flows) {
-    // Fossayeur de flux
-    //FIXME 
-    bool flow_is_done = false;
+    dbManager.insertDataEntry(categoryId, dataEntries);
+}
 
+void clean_flows_map(FlowsMap &flows_map) {
+    std::vector<std::shared_ptr<flow_struct>> flows_to_delete = {};
+    for (auto &flow : flows_map) {
+        flows_to_delete.push_back(std::move(flow.second));
+    }
+    for (auto &flow : flows_to_delete) {
+        save_to_database(flow);
+        flows_map.erase(flow->info);
+    }
+}
 
-    if (flow_is_done) {
-        // vérifiez si le protocole est connu
-        uint8_t is_proto_guessed = 0; // Initialise avec une valeur par défaut
-        if (flow->info.detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-            // Appel de la fonction ndpi_detection_giveup pour essayer de deviner le protocole en dernier recours
-            ndpi_detection_giveup(ndpi_struct, &flow->ndpi_flow, 1, &is_proto_guessed);
-            // TODO: Gérer le cas où le protocole est inconnu
+void flow_heal_check(FlowsMap &flows_map, FlowsQueue &flows_queue, std::vector<std::shared_ptr<flow_struct>> &archived_flows) {
+    auto current_time = std::chrono::system_clock::now(); 
+    auto last_timestamp_to_delete = std::chrono::time_point_cast<std::chrono::milliseconds>(current_time - std::chrono::milliseconds(1)).time_since_epoch().count();
+    std::vector<std::shared_ptr<flow_struct>> flows_to_delete = {};
+    for (auto &flow : flows_map) {
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(current_time - flow.second->info.creation_timestamp).count() > MAX_IDLE_TIME) {
+            flows_to_delete.push_back(std::move(flow.second));
         }
-   
-#ifdef DEBUG        
-        // Déplacez le flux vers archived_flows (attention on déplace le ownership) 
-        archived_flows.push_back(std::move(flow)); 
-#endif
-    }else{
-        // Déplacez le flux vers flows (attention on déplace le ownership)
-        flows.push_back(std::move(flow));
+    }
+    for (auto &flow : flows_to_delete) {
+        save_to_database(flow);
+        flows_map.erase(flow->info);
+        archived_flows.push_back(std::move(flow));
     }
 }
 
-
-//compare function that compares IP addresses, ports and protocol of the packet with those of the stream
-bool compare_flow(const flow_struct& flow, const flow_info& info_packet) {
-    if (flow.info.family != info_packet.family) {
-        return false;
-    }
-
-    if (flow.info.family == AF_INET) {
-        return (flow.info.src_ip == info_packet.src_ip && flow.info.dst_ip == info_packet.dst_ip && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) ||
-               (flow.info.src_ip == info_packet.dst_ip && flow.info.dst_ip == info_packet.src_ip && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port);
-    } else if (flow.info.family == AF_INET6) {
-        return (flow.info.src_ipv6 == info_packet.src_ipv6 && flow.info.dst_ipv6 == info_packet.dst_ipv6 && flow.info.src_port == info_packet.src_port && flow.info.dst_port == info_packet.dst_port) ||
-               (flow.info.src_ipv6 == info_packet.dst_ipv6 && flow.info.dst_ipv6 == info_packet.src_ipv6 && flow.info.src_port == info_packet.dst_port && flow.info.dst_port == info_packet.src_port);
-    }
-
-    return false;
-}
-
-bool find_and_move_flow(const flow_info &info_packet, std::vector<std::unique_ptr<flow_struct>> &flows, std::unique_ptr<flow_struct> &flow_found_ptr) {
-    auto it = std::find_if(flows.begin(), flows.end(), [&](const auto &flow) {
-        return compare_flow(*flow, info_packet);
-    });
-
-    if (it != flows.end()) {
-        // Flux trouvé, transfert de propriété
-        flow_found_ptr = std::move(*it);
-        flows.erase(it); // Supprime le flux du vecteur flows
-        return true;
-    }
-
-    return false;  // Flux non trouvé
-}
-
-
-int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &pdu, std::vector<std::unique_ptr<flow_struct>> &flows, std::vector<std::unique_ptr<flow_struct>> &archived_flows) {
-    std::unique_ptr<flow_struct> flow_to_process_ptr;
+int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &pdu, FlowsMap &flows_map, std::vector<std::shared_ptr<flow_struct>> &archived_flows, FlowsQueue &flows_queue) {
+    std::shared_ptr<flow_struct> flow_to_process_ptr;
 
     // TIME
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     // Cherche si le flux existe déjà
-    if (find_and_move_flow(*info_packet, flows, flow_to_process_ptr)) {
-        // Flux trouvé, transfert de propriété effectué dans la fonction
+    auto it = flows_map.find(*info_packet);
+    if (it != flows_map.end()) {
+        // Flux trouvé, transfert de propriété
+        flow_to_process_ptr = std::move(it->second);
+        flows_map.erase(it); // Supprime le flux du vecteur flows
         packet.input_info.seen_flow_beginning = 1;
     } else {
         // Flux non trouvé, crée un nouveau flux
@@ -153,71 +240,37 @@ int read_packet(flow_info *info_packet, packet_struct &packet, const Tins::PDU &
         flow_to_process_ptr->info = *info_packet;
         flow_to_process_ptr->info.family = info_packet->family;
         packet.input_info.seen_flow_beginning = 0;
+        flow_to_process_ptr->info.creation_timestamp = std::chrono::system_clock::now();
     }
     // TIME
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //push_back end - begin to time_points_find_and_move_flow
     time_points_find_and_move_flow.push_back(end - begin);
-    
+
     flow_to_process_ptr->packets.push_back(packet);
-    
+
+    //BUG filter :
+    std::vector<packet_struct> packets1 = flow_to_process_ptr->packets;
+    int count_packets1 = flow_to_process_ptr->packets.size();
     ndpi_protocol p_d = ndpi_detection_process_packet(ndpi_struct, &flow_to_process_ptr->ndpi_flow, packet.packet_data, packet.packetlen, packet.timestamp, &packet.input_info);
+    //BUG filter :
+    int count_packets2 = flow_to_process_ptr->packets.size();
+    if (count_packets1 != count_packets2) {
+        // on remet l'ancien vecteur de paquets
+        //flow_to_process_ptr->packets = packets1;
+        return -1;
+    }
 
     flow_to_process_ptr->info.detected_protocol = p_d;
 
+    flows_map.insert(std::make_pair(flow_to_process_ptr->info, std::move(flow_to_process_ptr)));
+    
+
     // fossoyeur de flux : il va prendre le flux et le déplacer dans archived_flows ou flows en fonction de son état (flows et archived_flows sont passés par référence pour ne pas dupliquer les données)
-    flow_heal_check(flow_to_process_ptr, const_cast<Tins::PDU &>(pdu), flows, archived_flows);
+    flow_heal_check(flows_map, flows_queue, archived_flows);
+    
 
     return 0;
-}
-
-
-
-
-std::vector<App_Protocol> protocols;
-
-void detected_protocols( flow_struct &flow, std::vector<App_Protocol> &protocols) { 
-    const char* appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow.info.detected_protocol.app_protocol);
-    //const char* appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow.ndpi_flow.detected_protocol_stack[0]); //
-    if (flow.info.detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-        u_int8_t* protocol_was_guessed = new u_int8_t; // Allouer de la mémoire pour la variable
-        *protocol_was_guessed = 0; // Initialiser la valeur de la variable
-
-        auto a = ndpi_detection_giveup(ndpi_struct, &flow.ndpi_flow, 1, protocol_was_guessed);
-        appprotocol_name = ndpi_get_proto_name(ndpi_struct, flow.ndpi_flow.detected_protocol_stack[0]);
-
-        delete protocol_was_guessed;
-    }
-    bool found = false;
-    for (int i = 0; i < protocols.size(); i++){
-        if (protocols[i].name == appprotocol_name){
-            protocols[i].flows++;
-            for (auto &packet : flow.packets){
-                protocols[i].packets++;
-                protocols[i].bytes += packet.packetbytes;
-            }
-            found = true;
-        }
-    }
-    if (!found){
-        App_Protocol new_protocol;
-        new_protocol.name = appprotocol_name;
-        new_protocol.flows = 1;
-        for (auto &packet : flow.packets){
-            new_protocol.packets++;
-            new_protocol.bytes += packet.packetbytes;
-        }
-        protocols.push_back(new_protocol);
-    }
-}
-
-void print_detected_protocols(std::vector<App_Protocol> &protocols){
-    std::cout << " ---------------------- Protocols ----------------------" << std::endl;
-    std::cout << std::setw(20) << std::left << "Name" << std::setw(15) << std::left << "Packets" << std::setw(15) << std::left << "Bytes" << std::setw(15) << std::left << "Flows" << std::endl;
-    for (int i = 0; i < protocols.size(); i++) {
-        std::cout << std::setw(20) << std::left << protocols[i].name << std::setw(15) << std::left << protocols[i].packets << std::setw(15) << std::left << protocols[i].bytes << std::setw(15) << std::left << protocols[i].flows << std::endl;
-    }
-    std::cout << " ------------------- End of Protocols -------------------" << std::endl;
 }
 
 // Function to set packet family and source/destination IP addresses
@@ -282,48 +335,18 @@ int Incoming_outcoming(const Tins::IP *ipv4_pdu, const Tins::IPv6 *ipv6_pdu, con
     return -1; // Erreur : paquet non pris en charge ou informations manquantes
 }
 
-void testbdd() {
-    DatabaseManager dbManager("example_main_db.db");
-
-    // Example data insertion for 'games' category
-    int categoryId = dbManager.insertCategory("games");
-
-    if (categoryId != -1) {
-        std::vector<DataEntry> gameEntries = {{1642531200, 1024}, {1642532400, 512}};
-        dbManager.insertDataEntry(categoryId, gameEntries);
-    }
-
-    // Example data insertion for 'streaming' category
-    int streamingCategoryId = dbManager.insertCategory("streaming");
-
-    if (streamingCategoryId != -1) {
-        std::vector<DataEntry> streamingEntries = {{1642533600, 768}, {1642534800, 256}};
-        dbManager.insertDataEntry(streamingCategoryId, streamingEntries);
-    }
-
-    // Example data insertion for 'games' category again
-    categoryId = dbManager.insertCategory("games");
-
-    if (categoryId != -1) {
-        std::vector<DataEntry> gameEntries = {{1642536000, 1024}, {1642537200, 512}};
-        dbManager.insertDataEntry(categoryId, gameEntries);
-    }
-}
-
-
 int main() {
-    //testbdd();
-    testbdd();
     // Initialize nDPI
-    std::vector<App_Protocol> protocols;
     if (ndpi_struct == nullptr) {
         std::cout << "nDPI initialization failed" << std::endl;
         return -1;
     }
 
     // Vector for storing packet flows
-    std::vector<std::unique_ptr<flow_struct>> flows;
-    std::vector<std::unique_ptr<flow_struct>> archived_flows;
+    std::vector<std::shared_ptr<flow_struct>> flows;
+    FlowsMap flows_map;
+    FlowsQueue flows_queue;
+    std::vector<std::shared_ptr<flow_struct>> archived_flows;
 
     // Read packets and detect protocols
     Tins::SnifferConfiguration config;
@@ -386,7 +409,7 @@ int main() {
             packet.packetbytes = pdu.size();
 
             // Read and process the packet
-            read_packet(&packet_info, packet, pdu, flows, archived_flows);
+            read_packet(&packet_info, packet, pdu, flows_map, archived_flows, flows_queue);
 
             // Use smart pointers to manage memory
             delete[] packet.packet_data;
@@ -408,6 +431,9 @@ int main() {
 
     // Print size of flows
     std::cout << "Size of flows: " << flows.size() << std::endl;
+
+    // Print size of flows_map
+    std::cout << "Size of flows_map: " << flows_map.size() << std::endl;
 
 #ifdef DEBUG
     // Print size of archived flows (if DEBUG is defined)
@@ -437,14 +463,11 @@ int main() {
     for (auto &flow : flows) {
         archived_flows.push_back(std::move(flow));
     }
-
-    // Detect protocols for archived flows
-    for (auto &flow : archived_flows) {
-        detected_protocols(*flow, protocols);
+    // Move flows_map to archived flows
+    clean_flows_map(flows_map);
+    for (auto &flow : flows_map) {
+        archived_flows.push_back(std::move(flow.second));
     }
-
-    // Print the detected protocols
-    print_detected_protocols(protocols);
 
     ndpi_exit_detection_module(ndpi_struct);
 

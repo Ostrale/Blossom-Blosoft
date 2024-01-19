@@ -84,4 +84,23 @@ public:
             }
         }
     }
+
+int getCategoryId(const std::string& category) {
+    std::string selectCategoryQuery = "SELECT id FROM categories WHERE category = '" + category + "';";
+
+    int categoryId = -1; // Default value if category is not found
+
+    int rc = sqlite3_exec(db, selectCategoryQuery.c_str(), [](void* data, int argc, char** argv, char** azColName) {
+        if (argc > 0 && argv[0]) {
+            *static_cast<int*>(data) = std::stoi(argv[0]);
+        }
+        return 0;
+    }, &categoryId, 0);
+
+    if (rc != SQLITE_OK) {
+        std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+    }
+
+    return categoryId;
+}
 };
