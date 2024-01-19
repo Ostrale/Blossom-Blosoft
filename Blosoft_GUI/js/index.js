@@ -20,4 +20,4 @@ let imageinp = document.getElementById("arbre");
 imageinp.innerHTML = var3;
 
 let ecoscore = document.getElementById("ecoscore");
-ecoscore.innerHTML = "Votre ecoscore : "+pourcentage;
+ecoscore.innerHTML = "Your Ecoscore : "+pourcentage;
