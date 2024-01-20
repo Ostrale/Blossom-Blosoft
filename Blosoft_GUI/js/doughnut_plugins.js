@@ -4,7 +4,8 @@ export const text = {
         var width = chart.chartArea.width,
         height = chart.chartArea.height,
         ctx = chart.ctx;
-
+        const textLabel = chart.config.data.labels[chart._active[0].index];
+        
         ctx.restore();
         var fontSize = (height / 114).toFixed(2);
         ctx.font = fontSize + "em sans-serif";
@@ -15,7 +16,7 @@ export const text = {
         textX = Math.round((width ) / 2),
         textY = (height / 2) + chart.legend.height + chart.titleBlock.height;
         ctx.textAlign = 'center';
-        ctx.fillText(`${textLabel}: ${numberLabel} Go`, textX, textY);
+        ctx.fillText(`${textLabel}: ${text} Go`, textX, textY);
         ctx.save();
     }
 };
