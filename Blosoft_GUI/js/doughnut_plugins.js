@@ -14,7 +14,7 @@ export const text = {
         textX = Math.round((width - ctx.measureText(text).width) / 2),
         textY = (height / 2) + chart.legend.height + chart.titleBlock.height;
 
-        ctx.fillText(text, textX, textY);
+        ctx.fillText(`${textLabel}: ${text} Go`, textX, textY);
         ctx.save();
     }
 };
