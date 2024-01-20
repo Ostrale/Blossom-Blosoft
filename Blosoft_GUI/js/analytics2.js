@@ -13,8 +13,8 @@ const data_radar = {
   	labels: labels_bar,
   	datasets: [
     	{
-      		label: 'Your average data usage (Go)',
-      		data: [0.470, 8.500, 0.280, 2.560, 0.990, 0.700],
+      		label: 'Your average data usage today (Go)',
+      		data:[4.45, 8.05, 3.45, 9.35, 5.95, 6.75],
      		backgroundColor: 'rgba(200, 108, 24, 0.4)',
       		borderColor: 'rgba(200, 108, 24, 1)',	
     	},

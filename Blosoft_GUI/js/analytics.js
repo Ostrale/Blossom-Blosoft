@@ -35,7 +35,7 @@ const data2 = {
         label: 'Your consumption over the past days (Go)',
         backgroundColor: 'rgba(200, 108, 24, 1)',
         borderColor: 'rgba(200, 108, 24, 1)',
-        data: [4.2, 1.5, 7.8, 3.2, 9.1, 5.7, 4.5],
+        data: [4.2, 1.5, 7.8, 3.2, 9.1, 5.7, 6.5],
         cubicInterpolationMode: 'monotone',
         fill: false,
     }]
@@ -102,7 +102,7 @@ const data_bar = {
   	datasets: [
     	{
       	label: 'Your data usage today (Go)',
-      	data: [0.470, 8.500, 0.280, 2.560, 0.990, 0.700],
+      	data: [0.470, 1.500, 0.280, 2.560, 0.990, 0.700],
       	backgroundColor: 'rgba(44,  122, 40, 0.8)',
     	}
   	]
