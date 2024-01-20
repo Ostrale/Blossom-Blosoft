@@ -12,7 +12,7 @@ add_library(Blosoft_DatabaseManager_library
 
 # Link libraries if needed
 target_include_directories(Blosoft_DatabaseManager_library PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/sqlite)
-target_link_libraries(Blosoft_DatabaseManager_library PRIVATE sqlite3)
+target_link_libraries(Blosoft_DatabaseManager_library PRIVATE)
 
 # Set any other target-specific properties or configurations if needed
 

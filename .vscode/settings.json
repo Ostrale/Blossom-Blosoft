@@ -74,7 +74,8 @@
         "reader_util.h": "c",
         "uthash.h": "c",
         "deque": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "filesystem": "cpp"
     },
-    "cmake.sourceDirectory": "C:/Users/enzod/Desktop/Programmation/Git/Blossom-Blosoft/Blosoft_analyzer"
+    "cmake.sourceDirectory": "C:/Users/enzod/Desktop/Programmation/Git/Blossom-Blosoft/"
 }

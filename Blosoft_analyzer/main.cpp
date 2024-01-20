@@ -1,4 +1,7 @@
 #include <iostream>
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
+
 #include <tins/tins.h>
 #include "ndpi/ndpi_main.h"
 #include <fstream>
@@ -16,10 +19,10 @@
 #include "../Blosoft_DatabaseManager/DatabaseManager.hpp"
 
 #include <time.h>
-#define TEMPS_DE_RUN 240 // en secondes
+#define TEMPS_DE_RUN 600 // en secondes
 
 // Define comportement of the program
-//#define TEST
+#define TEST
 #define DEBUG
 
 #ifdef DEBUG
@@ -42,7 +45,7 @@ T myMax(const T& a, const T& b) {
 
 
 // Define constants
-#define MAX_IDLE_TIME 60000 // 1 minute
+#define MAX_IDLE_TIME 100000 // in milliseconds - 100 seconds
 
 extern struct ndpi_detection_module_struct* ndpi_struct = ndpi_init_detection_module(ndpi_no_prefs); // key word to remove  ? #TODO
 
@@ -358,7 +361,8 @@ int main() {
     std::wcout << " (" << iface.friendly_name() << ")" << std::endl;
 
 #if defined TEST
-    Tins::FileSniffer sniffer("data/a.pcap");  //XXX Open the pcap file for reading
+    std::cout << "Répertoire de travail : " << std::experimental::filesystem::current_path() << std::endl;
+    Tins::FileSniffer sniffer("Blosoft_analyzer/data/a.pcap");  //XXX Open the pcap file for reading
 #elif !defined TEST
     Tins::Sniffer sniffer(iface.name(), config);  // Instantiate the sniffer
 #endif

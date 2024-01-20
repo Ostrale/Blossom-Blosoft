@@ -5,10 +5,10 @@
             "type": "cppvsdbg",
             "request": "launch",
             "preLaunchTask": "CMake: build",
-            "program": "${workspaceFolder}/build/Debug/Blossom-Blosoft.exe",
+            "program": "${workspaceFolder}/build/Blosoft_analyzer/Debug/Blossom_analyzer.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "integratedTerminal",
         }
