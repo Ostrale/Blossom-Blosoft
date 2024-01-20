@@ -20,7 +20,7 @@ const data_radar = {
     	},
     	{
       	label: 'Vertuous usage (Go)',
-      	data: [0.810, 9.54, 0.520, 3.535, 1.02, 0.1055], 
+      	data: [0.810, 9.54, 0.520, 3.535, 1.02, 1.055], 
       	backgroundColor: 'rgba(144, 221, 140, 0.4)',
       	borderColor: 'rgba(44, 122, 40, 1)',
     	}
