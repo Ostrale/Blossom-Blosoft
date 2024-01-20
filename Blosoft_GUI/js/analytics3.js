@@ -25,11 +25,12 @@ const fridgeCO2 = conso * (Kdatacenter + Kwifi) * Ffrance * fridgeEquivalence;
 const boilerCO2 = conso * (Kdatacenter + Kwifi) * Ffrance * boilerEquivalence;
 
 // Update HTML elements
-document.querySelector('#column1 .number-value2:nth-child(1)').textContent = trainCO2.toFixed(2);
-document.querySelector('#column1 .number-value2:nth-child(2)').textContent = subwayCO2.toFixed(2);
-document.querySelector('#column1 .number-value2:nth-child(3)').textContent = busCO2.toFixed(2);
-document.querySelector('#column1 .number-value2:nth-child(4)').textContent = planeCO2.toFixed(2);
-document.querySelector('#column2 .number-value2:nth-child(1)').textContent = motorcycleCO2.toFixed(2);
-document.querySelector('#column2 .number-value2:nth-child(2)').textContent = carCO2.toFixed(2);
-document.querySelector('#column2 .number-value2:nth-child(3)').textContent = fridgeCO2.toFixed(2);
-document.querySelector('#column2 .number-value2:nth-child(4)').textContent = boilerCO2.toFixed(2);
+document.querySelector('#column1 .number-value2:nth-child(1)').id = 'trainCO2';
+document.querySelector('#column1 .number-value2:nth-child(2)').id = 'subwayCO2';
+document.querySelector('#column1 .number-value2:nth-child(3)').id = 'busCO2';
+document.querySelector('#column1 .number-value2:nth-child(4)').id = 'planeCO2';
+
+document.querySelector('#column2 .number-value2:nth-child(1)').id = 'motorcycleCO2';
+document.querySelector('#column2 .number-value2:nth-child(2)').id = 'carCO2';
+document.querySelector('#column2 .number-value2:nth-child(3)').id = 'fridgeCO2';
+document.querySelector('#column2 .number-value2:nth-child(4)').id = 'boilerCO2';
