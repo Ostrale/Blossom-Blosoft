@@ -29,8 +29,16 @@ document.querySelector('#column1 .number-value2:nth-child(1)').id = 'trainCO2';
 document.querySelector('#column1 .number-value2:nth-child(2)').id = 'subwayCO2';
 document.querySelector('#column1 .number-value2:nth-child(3)').id = 'busCO2';
 document.querySelector('#column1 .number-value2:nth-child(4)').id = 'planeCO2';
-
 document.querySelector('#column2 .number-value2:nth-child(1)').id = 'motorcycleCO2';
 document.querySelector('#column2 .number-value2:nth-child(2)').id = 'carCO2';
 document.querySelector('#column2 .number-value2:nth-child(3)').id = 'fridgeCO2';
 document.querySelector('#column2 .number-value2:nth-child(4)').id = 'boilerCO2';
+
+document.getElementById('trainCO2').textContent = trainCO2.toFixed(2);
+document.getElementById('subwayCO2').textContent = subwayCO2.toFixed(2);
+document.getElementById('busCO2').textContent = busCO2.toFixed(2);
+document.getElementById('planeCO2').textContent = planeCO2.toFixed(2);
+document.getElementById('motorcycleCO2').textContent = motorcycleCO2.toFixed(2);
+document.getElementById('carCO2').textContent = carCO2.toFixed(2);
+document.getElementById('fridgeCO2').textContent = fridgeCO2.toFixed(2);
+document.getElementById('boilerCO2').textContent = boilerCO2.toFixed(2);
