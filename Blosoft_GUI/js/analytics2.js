@@ -3,8 +3,8 @@ import { hoverLabel } from "./doughnut_plugins.js";
 const labels_bar = [
     'Web browsing',
 	'Streaming',
-    'Email & IM',
-    'Cloud storage',
+    'Email',
+    'Social media',
     'Web-market',
     'Other',
 ];
