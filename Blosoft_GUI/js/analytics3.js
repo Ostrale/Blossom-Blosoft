@@ -34,7 +34,6 @@ document.querySelector('#column2 .number-value2:nth-child(2)').id = 'carCO2';
 document.querySelector('#column2 .number-value2:nth-child(3)').id = 'fridgeCO2';
 document.querySelector('#column2 .number-value2:nth-child(4)').id = 'boilerCO2';
 
-console.log("trainCO2:" , trainCO2);
 document.getElementById('trainCO2').textContent = trainCO2.toFixed(2);
 document.getElementById('subwayCO2').textContent = subwayCO2.toFixed(2);
 document.getElementById('busCO2').textContent = busCO2.toFixed(2);
