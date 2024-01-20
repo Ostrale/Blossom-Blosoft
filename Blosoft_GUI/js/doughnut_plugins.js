@@ -10,7 +10,8 @@ export const text = {
         ctx.font = fontSize + "em sans-serif";
         ctx.textBaseline = "middle";
 
-        var text = chart.data.datasets[0].data.reduce((partialSum, a) => partialSum + a, 0) + "Go",
+        var text = chart.data.datasets[0].data.reduce((partialSum, a) => partialSum + a, 0),
+        text = text + " Go",
         textX = Math.round((width - ctx.measureText(text).width) / 2),
         textY = (height / 2) + chart.legend.height + chart.titleBlock.height;
 
