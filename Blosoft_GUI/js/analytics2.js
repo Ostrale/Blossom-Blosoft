@@ -70,7 +70,7 @@ const data_doughnut = {
 	datasets: [
 	  {
 		label: 'Consumption (Go)',
-		data: [0.470, 8.500, 0.280, 2.560, 0.990, 0.700],
+		data: [4.45, 8.05, 3.45, 9.35, 5.95, 6.75],
 		backgroundColor: 
 			['rgba(200, 108, 24, 0.8)',
 			 'rgba(44,  122, 40, 0.8)',
