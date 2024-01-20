@@ -10,12 +10,12 @@ export const text = {
         ctx.font = fontSize + "em sans-serif";
         ctx.textBaseline = "middle";
 
+        ctx.fillStyle = 'rgba(0, 0, 0, 1)';
         var text = chart.data.datasets[0].data.reduce((partialSum, a) => partialSum + a, 0),
-        text = text + " Go",
-        textX = Math.round((width - ctx.measureText(text).width) / 2),
+        textX = Math.round((width ) / 2),
         textY = (height / 2) + chart.legend.height + chart.titleBlock.height;
-
-        ctx.fillText(`${text}: ${text} Go`, textX, textY);
+        ctx.textAlign = 'center';
+        ctx.fillText(`${textLabel}: ${numberLabel} Go`, textX, textY);
         ctx.save();
     }
 };
