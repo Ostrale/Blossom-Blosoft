@@ -3,8 +3,8 @@ import { hoverLabel } from "./doughnut_plugins.js";
 const labels_bar = [
     'Web browsing',
 	'Streaming',
-    'Email & IM',
-    'Cloud storage',
+    'Email',
+    'Social media',
     'Web-market',
     'Other',
 ];
@@ -13,14 +13,14 @@ const data_radar = {
   	labels: labels_bar,
   	datasets: [
     	{
-      		label: 'Your average data usage (Mo)',
-      		data: [0.470, 1.500, 0.280, 0.560, 0.990, 0.700],
+      		label: 'Your average data usage today (Go)',
+      		data:[4.45, 8.05, 3.45, 9.35, 5.95, 6.75],
      		backgroundColor: 'rgba(200, 108, 24, 0.4)',
       		borderColor: 'rgba(200, 108, 24, 1)',	
     	},
     	{
-      	label: 'Vertuous usage (Mo)',
-      	data: [0.810, 0.954, 0.520, 0.490, 0.870, 0.1055], 
+      	label: 'Vertuous usage (Go)',
+      	data: [0.810, 9.54, 0.520, 3.535, 1.02, 1.055], 
       	backgroundColor: 'rgba(144, 221, 140, 0.4)',
       	borderColor: 'rgba(44, 122, 40, 1)',
     	}
@@ -70,7 +70,7 @@ const data_doughnut = {
 	datasets: [
 	  {
 		label: 'Consumption (Go)',
-		data: [1.500, 0.470, 0.280, 0.560, 0.990, 0.700],
+		data: [4.45, 8.05, 3.45, 9.35, 5.95, 6.75],
 		backgroundColor: 
 			['rgba(200, 108, 24, 0.8)',
 			 'rgba(44,  122, 40, 0.8)',
