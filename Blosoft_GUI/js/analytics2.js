@@ -14,13 +14,13 @@ const data_radar = {
   	datasets: [
     	{
       		label: 'Your average data usage (Go)',
-      		data: [0.470, 1.500, 0.280, 0.560, 0.990, 0.700],
+      		data: [0.470, 8.500, 0.280, 2.560, 0.990, 0.700],
      		backgroundColor: 'rgba(200, 108, 24, 0.4)',
       		borderColor: 'rgba(200, 108, 24, 1)',	
     	},
     	{
       	label: 'Vertuous usage (Go)',
-      	data: [0.810, 0.954, 0.520, 0.490, 0.870, 0.1055], 
+      	data: [0.810, 9.54, 0.520, 3.535, 1.02, 0.1055], 
       	backgroundColor: 'rgba(144, 221, 140, 0.4)',
       	borderColor: 'rgba(44, 122, 40, 1)',
     	}
@@ -70,7 +70,7 @@ const data_doughnut = {
 	datasets: [
 	  {
 		label: 'Consumption (Go)',
-		data: [1.500, 0.470, 0.280, 0.560, 0.990, 0.700],
+		data: [0.470, 8.500, 0.280, 2.560, 0.990, 0.700],
 		backgroundColor: 
 			['rgba(200, 108, 24, 0.8)',
 			 'rgba(44,  122, 40, 0.8)',

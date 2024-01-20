@@ -89,8 +89,8 @@ const DATA_COUNT = 7;
 const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
 
 const labels_bar = [
-    'Streaming',
     'Web browsing',
+	'Streaming',
     'Email',
     'Social media',
     'Web-market',
@@ -102,7 +102,7 @@ const data_bar = {
   	datasets: [
     	{
       	label: 'Your data usage today (Go)',
-      	data: [1.5, 0.47, 0.28, 0.56, 0.99, 0.7],
+      	data: [0.470, 8.500, 0.280, 2.560, 0.990, 0.700],
       	backgroundColor: 'rgba(44,  122, 40, 0.8)',
     	}
   	]
