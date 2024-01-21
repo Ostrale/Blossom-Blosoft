@@ -1,77 +1,85 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" width="device-with", initial-scale=1.0>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blosoft</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
 </head>
 
 <body>
-  <script src="js/body.js "></script>
-  <section class="home-section">
-  <div class="title">Analytics division</div>
-    <div class="comparison">
-      <div class="column" id="column1">
-        <div class="number-column">
-          <i class='bx bxs-train'></i>
-          <span class="number-title2">Train</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-        <div class="number-column">
-          <i class='bx bxl-medium'></i>
-          <span class="number-title2">Subway</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-        <div class="number-column">
-          <i class='bx bxs-bus-school'></i>
-          <span class="number-title2">Bus</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-        <div class="number-column">
-          <i class='bx bxs-plane-alt'></i>
-          <span class="number-title2">Plane</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-      </div>
-      <div class="column" id="column1">
-        <div class="number-column">
-          <i class='bx bx-cycling'></i>
-          <span class="number-title2">Motorcycle</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-        <div class="number-column">
-          <i class='bx bxs-car'></i>
-          <span class="number-title2">Car</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-        <div class="number-column">
-          <i class='bx bxs-fridge'></i>
-          <span class="number-title2">Fridge</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
-        <div class="number-column">
+    <script src="js/body.js"></script>
+    <section class="home-section">
+        <div class="title">Analytics comparison</div>
+          <div class="full-width-section">
+            <div class="number-title2">This week, your data usage represented:</div>
+          </div>
+          <div class="comparison">
+            <div class="column" id="column1">
+              <div class="number-column">
+                <i class='bx bxs-car'></i>
+                <span class="number-title2">Car</span>
+                <div class="number-value2" id="car"></div>
+                <div class="number-title2">km</div>
+              </div>
+              <div class="number-column">
+                <i class='bx bxl-medium'></i>
+                <span class="number-title2">Subway</span>
+                <div class="number-value2" id="subway"></div>
+                <div class="number-title2">km</div>
+              </div>
+              <div class="number-column">
+                <i class='bx bxs-train'></i>
+                <span class="number-title2">Train</span>
+                <div class="number-value2" id="train"></div>
+                <div class="number-title2">km</div>
+              </div>
+              <div class="number-column">
+                <i class='bx bxs-fridge'></i>
+                <span class="number-title2">Fridge</span>
+                <div class="number-value2" id="fridge"></div>
+                <div class="number-title2">month(s)</div>
+              </div>
+            </div>
+            <div class="column" id="column2">
+              <div class="number-column">
+                <i class='bx bx-cycling'></i>
+                <span class="number-title2">Motorcycle</span>
+                <div class="number-value2" id="motorcycle"></div>
+                <div class="number-title2">km</div>
+              </div>
+              <div class="number-column">
+                <i class='bx bxs-bus-school'></i>
+                <span class="number-title2">Bus</span>
+                <div class="number-value2" id="bus"></div>
+                <div class="number-title2">km</div>
+              </div>
+              <div class="number-column">
+                <i class='bx bxs-t-shirt'></i>
+                <span class="number-title2">Tshirts</span>
+                <div class="number-value2" id="tshirt"></div>
+                <div class="number-title2">made</div>
+              </div>
+              <div class="number-column">
+                <i class='bx bxs-coffee'></i>
+                <span class="number-title2">Coffee Machine</span>
+                <div class="number-value2" id="coffee"></div>
+                <div class="number-title2">month(s)</div>
+              </div>
+            </div>
+          </div>
+          <div class="advice-section">
           <i class='bx bxs-bulb'></i>
-          <span class="number-title2">Light Bulb</span>
-          <div class="number-value2">15</div>
-          <div class="number-title2">km</div>
-        </div>
+          <span class="number-title2">Advice n°1 : Prefer the Wi-Fi network to 4G when possible.</span>
       </div>
-    </div>
-  </div> 
-  </section>
+      <div class="advice-section">
+          <i class='bx bxs-bulb'></i>
+          <span class="number-title2">Advice n°2 : Turn off your devices when you don't use it.</span>
+      </div>
+    </section>
 
-  <script src="js/script.js"></script>
-	<script src="js/analytics3.js"></script>
+    <script src="js/script.js"></script>
+    <script type="module" src="js/analytics3.js"></script>
 </body>
 </html>
