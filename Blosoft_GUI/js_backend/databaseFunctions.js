@@ -3,7 +3,7 @@ const dbPath = '../BlosoftDB.db';
 
 function getCategories() {
     return new Promise((resolve, reject) => {
-        const db = new sqlite3.Database(dbPath);
+        const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
         db.all('SELECT * FROM "categories"', (err, rows) => {
             if (err) {
                 console.error(err.message);
@@ -29,7 +29,7 @@ function getCategories() {
 
 function getCategoryTotals() {
     return new Promise((resolve, reject) => {
-        const db = new sqlite3.Database(dbPath);
+        const db = new sqlite3.Database(dbPath,sqlite3.OPEN_READONLY);
         db.all('SELECT categories.category AS categorie, SUM(data_entries.data_quantity) AS total_quantity FROM data_entries JOIN categories ON data_entries.category_id = categories.id GROUP BY data_entries.category_id', (err, rows) => {
             if (err) {
                 console.error(err.message);
@@ -44,7 +44,7 @@ function getCategoryTotals() {
 
 function getCategoryTotalsBetweenTimestamps(startTimestamp, endTimestamp) {
     return new Promise((resolve, reject) => {
-        const db = new sqlite3.Database(dbPath);
+        const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
         db.all('SELECT categories.category AS categorie, SUM(data_entries.data_quantity) AS total_quantity FROM data_entries JOIN categories ON data_entries.category_id = categories.id WHERE data_entries.timestamp >= ? AND data_entries.timestamp <= ? GROUP BY data_entries.category_id', [startTimestamp, endTimestamp], (err, rows) => {
             if (err) {
                 console.error(err.message);
