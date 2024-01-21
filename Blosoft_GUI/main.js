@@ -1,8 +1,13 @@
 // main.js
 
+// importation des modules
+const databaseFunctions = require('./js_backend/databaseFunctions.js');
+const utiles = require('./js_backend/utiles.js');
+
+
 // Modules de controle du cycle de vie de l'application et de création 
 // de fenêtre native de navigateur
-const { app, BrowserWindow, globalShortcut  } = require('electron')
+const { app, BrowserWindow, globalShortcut, ipcMain  } = require('electron')
 const path = require('path')
 
 var devtoolsstate = false;
@@ -45,12 +50,21 @@ const createWindow = () => {
 // de s'initialiser et sera prêt à créer des fenêtres de navigation.
 // Certaines APIs peuvent être utilisées uniquement quant cet événement est émit.
 app.whenReady().then(() => {
-  createWindow()
+	// --------------------- Section pour les IPC -----------------------------------------------------------
+	// Ne pas oubliez d'intégrer aussi dans le fichier preload.js
 
-  app.on('activate', () => {
-    // Sur macOS il est commun de re-créer une fenêtre  lors 
-    // du click sur l'icone du dock et qu'il n'y a pas d'autre fenêtre ouverte.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+	ipcMain.on('log', utiles.log); // utilisation dans un js de page web: electronAPI.log('message');
+	ipcMain.handle('get_categories', databaseFunctions.getCategories); // utilisation dans un js de page web: blosoftDB.getCategories()
+	ipcMain.handle('get_category_totals', databaseFunctions.getCategoryTotals);
+	ipcMain.handle('get_category_totals_between_timestamps', databaseFunctions.getCategoryTotalsBetweenTimestamps);
+	// --------------------- Fin section pour les IPC -------------------------------------------------------
+
+	// Création de la fenêtre de navigateur.
+  	createWindow()
+  	app.on('activate', () => {
+    	// Sur macOS il est commun de re-créer une fenêtre  lors 
+    	// du click sur l'icone du dock et qu'il n'y a pas d'autre fenêtre ouverte.
+    	if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 

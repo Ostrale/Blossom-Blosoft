@@ -185,8 +185,8 @@ void save_to_database(std::shared_ptr<flow_struct>& flow) {
     for (auto &packet : flow->packets) {
         bytes += packet.packetbytes;
     }
-    // Taking the timestamp of the flow from flow->info.creation_timestamp
-    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(flow->info.creation_timestamp.time_since_epoch()).count();
+    // Taking the timestamp of the flow from flow->info.creation_timestamp convert in Unix Timestamp
+    unsigned long timestamp = std::chrono::duration_cast<std::chrono::seconds>(flow->info.creation_timestamp.time_since_epoch()).count();
 
     // Creating a DataEntry object
     DataEntry dataEntry{timestamp, bytes};
@@ -362,7 +362,7 @@ int main() {
 
 #if defined TEST
     std::cout << "Répertoire de travail : " << std::experimental::filesystem::current_path() << std::endl;
-    Tins::FileSniffer sniffer("Blosoft_analyzer/data/a.pcap");  //XXX Open the pcap file for reading
+    Tins::FileSniffer sniffer("Blosoft_analyzer/data/big.pcap");  //XXX Open the pcap file for reading
 #elif !defined TEST
     Tins::Sniffer sniffer(iface.name(), config);  // Instantiate the sniffer
 #endif

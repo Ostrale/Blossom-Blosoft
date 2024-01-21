@@ -44,7 +44,7 @@ export const hoverLabel = {
             textX = Math.round((width ) / 2),
             textY = (height / 2) + chart.legend.height + chart.titleBlock.height;
             ctx.textAlign = 'center';
-            ctx.fillText(`${textLabel}: ${numberLabel} Go`, textX, textY);
+            ctx.fillText(`${textLabel}: ${numberLabel} ${chart.config.data.unit_hoverLabel}`, textX, textY);
             
         }
         ctx.restore();

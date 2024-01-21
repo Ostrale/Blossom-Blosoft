@@ -4,7 +4,7 @@
 #include <string>
 
 struct DataEntry {
-    int timestamp;
+    unsigned long timestamp;
     int dataQuantity;
 };
 
