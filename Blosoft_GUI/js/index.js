@@ -113,7 +113,7 @@ getTotalsEcoscore().then(([pourcentage, data]) => {
     unit = get_good_unit([data]);
     data = get_good_value([data], unit);
     let litle_text = document.getElementById("text");
-    litle_text.innerHTML = "You have consumed "+data+" "+ unit+" bytes last 7 days";
+    litle_text.innerHTML = "You have consumed "+data+" "+ unit+" last 7 days";
 
 
 }).catch((error) => {
