@@ -19,10 +19,13 @@
 #include "../Blosoft_DatabaseManager/DatabaseManager.hpp"
 
 #include <time.h>
-#define TEMPS_DE_RUN 600 // en secondes
+#define TEMPS_DE_RUN 10000*4*60 // en secondes
+
+// Define constants
+#define MAX_IDLE_TIME 1*60*1000 // in milliseconds 
 
 // Define comportement of the program
-#define TEST
+// #define TEST
 #define DEBUG
 
 #ifdef DEBUG
@@ -42,10 +45,6 @@ template <typename T>
 T myMax(const T& a, const T& b) {
     return (a > b) ? a : b;
 }
-
-
-// Define constants
-#define MAX_IDLE_TIME 100000 // in milliseconds - 100 seconds
 
 extern struct ndpi_detection_module_struct* ndpi_struct = ndpi_init_detection_module(ndpi_no_prefs); // key word to remove  ? #TODO
 
@@ -168,16 +167,48 @@ std::string detect_Category(std::shared_ptr<flow_struct> &flow) {
     return appprotocol_category;
 }
 
-void save_to_database(std::shared_ptr<flow_struct>& flow) {
-    DatabaseManager dbManager("BlosoftDB.db");
+std::string detect_Breed(std::shared_ptr<flow_struct> &flow) {
+    auto id_breed = ndpi_get_proto_breed(ndpi_struct, flow->info.detected_protocol.app_protocol);
+    const char* name = ndpi_get_proto_breed_name(ndpi_struct,  id_breed);
+    return name;
+}
 
+void save_to_database(std::shared_ptr<flow_struct>& flow) {
     std::string name_protocol = detect_protocol(flow);
     std::string name_category = detect_Category(flow);
+    std::string name_breed = detect_Breed(flow);
 
-    int categoryId = dbManager.getCategoryId(name_category);
+    int categoryId = -1;
 
-    if (categoryId == -1) {
-        categoryId = dbManager.insertCategory(name_category);
+    {
+        DatabaseManager dbManager("BlosoftDB.db");
+        categoryId = dbManager.getCategoryId(name_category);
+
+        if (categoryId == -1) {
+            categoryId = dbManager.insertCategory(name_category);
+        }
+    }
+
+    int breedId = -1;
+
+    {
+        DatabaseManager dbManager("BlosoftDB.db");
+        breedId = dbManager.getBreedId(name_breed);
+
+        if (breedId == -1) {
+            breedId = dbManager.insertBreed(name_breed);
+        }
+    }
+
+        int protocolId = -1;
+
+    {
+        DatabaseManager dbManager("BlosoftDB.db");
+        protocolId = dbManager.getProtocolId(name_protocol);
+
+        if (protocolId == -1) {
+            protocolId = dbManager.insertProtocol(name_protocol, categoryId, breedId);
+        }
     }
 
     // Summing the bytes of all packets in the flow
@@ -195,7 +226,10 @@ void save_to_database(std::shared_ptr<flow_struct>& flow) {
     std::vector<DataEntry> dataEntries;
     dataEntries.push_back(dataEntry);
 
-    dbManager.insertDataEntry(categoryId, dataEntries);
+    {
+        DatabaseManager dbManager("BlosoftDB.db");
+        dbManager.insertDataEntry(protocolId, dataEntries);
+    }
 }
 
 void clean_flows_map(FlowsMap &flows_map) {
@@ -362,7 +396,7 @@ int main() {
 
 #if defined TEST
     std::cout << "Répertoire de travail : " << std::experimental::filesystem::current_path() << std::endl;
-    Tins::FileSniffer sniffer("Blosoft_analyzer/data/big.pcap");  //XXX Open the pcap file for reading
+    Tins::FileSniffer sniffer("Blosoft_analyzer/data/youtube.pcap");  //XXX Open the pcap file for reading
 #elif !defined TEST
     Tins::Sniffer sniffer(iface.name(), config);  // Instantiate the sniffer
 #endif

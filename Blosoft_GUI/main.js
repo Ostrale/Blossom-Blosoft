@@ -57,6 +57,13 @@ app.whenReady().then(() => {
 	ipcMain.handle('get_categories', databaseFunctions.getCategories); // utilisation dans un js de page web: blosoftDB.getCategories()
 	ipcMain.handle('get_category_totals', databaseFunctions.getCategoryTotals);
 	ipcMain.handle('get_category_totals_between_timestamps', databaseFunctions.getCategoryTotalsBetweenTimestamps);
+	ipcMain.handle('get_breeds', databaseFunctions.getBreeds);
+	ipcMain.handle('get_protocols', databaseFunctions.getProtocols);
+	ipcMain.handle('get_protocols_totals', databaseFunctions.getProtocolsTotals);
+	ipcMain.handle('get_protocols_totals_between_timestamps', databaseFunctions.getProtocolsTotalsBetweenTimestamps);
+	ipcMain.handle('get_data_entries', databaseFunctions.getDataEntries);
+	ipcMain.handle('get_totals_between_timestamps', databaseFunctions.getTotalsBetweenTimestamps);
+	ipcMain.handle('get_oldest_timestamp', databaseFunctions.getOldestTimestamp);
 	// --------------------- Fin section pour les IPC -------------------------------------------------------
 
 	// Création de la fenêtre de navigateur.

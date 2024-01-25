@@ -28,4 +28,11 @@ contextBridge.exposeInMainWorld('blosoftDB', {
   getCategories: () => ipcRenderer.invoke('get_categories'),
   getCategoryTotals: () => ipcRenderer.invoke('get_category_totals'),
   getCategoryTotalsBetweenTimestamps: (startTimestamp, endTimestamp) => ipcRenderer.invoke('get_category_totals_between_timestamps', startTimestamp, endTimestamp),
+  getBreeds: () => ipcRenderer.invoke('get_breeds'),
+  getProtocols: () => ipcRenderer.invoke('get_protocols'),
+  getProtocolsTotals: () => ipcRenderer.invoke('get_protocols_totals'),
+  getProtocolsTotalsBetweenTimestamps: (startTimestamp, endTimestamp) => ipcRenderer.invoke('get_protocols_totals_between_timestamps', startTimestamp, endTimestamp),
+  getDataEntries: () => ipcRenderer.invoke('get_data_entries'),
+  getTotalsBetweenTimestamps: (startTimestamp, endTimestamp) => ipcRenderer.invoke('get_totals_between_timestamps', startTimestamp, endTimestamp),
+  getOldestTimestamp: () => ipcRenderer.invoke('get_oldest_timestamp'),
 });
